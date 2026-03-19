@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -266,11 +266,21 @@
     <p>Last updated: March 2026</p>
   </section>
 
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  <script>
     function navigate(pageId) {
-      // hide all pages
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  
-      // show target
-      const target = document.getElementById(pageId);
-      if (target) { target.classList.add('active'); windo
+      document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+      var target = document.getElementById(pageId);
+      if (target) { target.classList.add('active'); window.scrollTo(0, 0); }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('[data-page]').forEach(function(el) {
+        el.addEventListener('click', function() {
+          navigate(this.getAttribute('data-page'));
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>
