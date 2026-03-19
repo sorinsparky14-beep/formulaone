@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="dark">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lights Out & Toe Away</title>
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .back-btn { margin-bottom: 12px; opacity: 0.7; }
+    .back-btn:hover { opacity: 1; }
+  </style>
+</head>
+<body>
+<div id="app">
+<header>
+  <div class="logo" onclick="goHome()"><span>LIGHTS OUT</span><span style="color:var(--t1)"> &amp; TOE AWAY</span></div>
+</header>
+
+<div id="home" class="scr on">
+  <div class="ht">The ultimate knowledge challenge for Formula One fans</div>
+  <div class="pills">
+    <span class="pill">🏎️ Top 20 Teams</span><span class="pill">🌍 Driver Nationality</span>
+    <span class="pill">🏆 Championship Trophies</span><span class="pill">🎓 Team Principal</span>
+    <span class="pill">🤝 Teammate Of…</span><span class="pill">🏟️ Famous Circuits</span>
+    <span class="pill">🃏 Wildcard Feats</span><span class="pill">📅 Birth Decade</span>
+    <span class="pill">🌎 Continent Wins</span><span class="pill">⚡ Grand Slam</span>
+  </div>
+  <div class="mode-grid">
+    <button class="mode-card mode-same" onclick="openGameTab('same')">
+      <img class="mode-img" src="data:image/png;base64,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" alt="Same Screen"/>
+      <div class="mode-name">Same Screen</div>
+      <div class="mode-desc">Two players, one device</div>
+    </button>
+    <button class="mode-card mode-friend" onclick="openGameTab('room')">
+      <img class="mode-img" src="data:image/png;base64,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" alt="Play with a Friend"/>
+      <div class="mode-name">Play with a Friend</div>
+      <div class="mode-desc">Private room via link or QR</div>
+    </button>
+    <button class="mode-card mode-online" onclick="openGameTab('bot')">
+      <img class="mode-img" src="data:image/png;base64,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" alt="Play Online"/>
+      <div class="mode-name">Play Online</div>
+      <div class="mode-desc">Challenge somebody</div>
+    </button>
+  </div>
+  <button class="btn btn-s btn-sm" onclick="showS('howto')" style="margin-top:4px;">How to Play</button>
+</div>
+
+
+<div id="roomlobby" class="scr">
+  <div class="lobby-wrap">
+    <div class="lobby-title">PRIVATE ROOM</div>
+
+    <!-- CREATE ROOM -->
+    <div class="lobby-section">
+      <div class="lobby-section-label">— CREATE A PRIVATE ROOM</div>
+      <p class="lobby-desc">Start a new room and share the link or code with your friends.</p>
+      <button class="btn btn-p lobby-btn" onclick="createRoom()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        CREATE ROOM
+      </button>
+    </div>
+
+    <div class="lobby-or">OR</div>
+
+    <!-- JOIN ROOM -->
+    <div class="lobby-section">
+      <div class="lobby-section-label">— JOIN A ROOM</div>
+      <div class="lobby-join-row">
+        <input type="text" id="join-code-input" class="lobby-input" placeholder="ENTER CODE" maxlength="8" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter')joinRoom()"/>
+        <button class="btn btn-s lobby-join-btn" onclick="joinRoom()">JOIN</button>
+      </div>
+      <div id="lobby-err" class="lobby-error"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ROOM CREATED screen: shows code + QR + share link -->
+<div id="roomcreated" class="scr">
+  <div class="lobby-wrap">
+    <button class="btn btn-s btn-sm back-btn" onclick="leaveRoom()">← Back</button>
+    <div class="lobby-title">ROOM CREATED</div>
+    <div class="roomcard">
+      <div class="roomcard-qr" id="room-qr"></div>
+      <div class="roomcard-info">
+        <div class="roomcard-label">— ROOM CODE</div>
+        <div class="roomcard-code" id="room-code-display">------</div>
+        <div class="roomcard-label" style="margin-top:16px;">— SHARE LINK</div>
+        <div class="roomcard-linkrow">
+          <input type="text" class="roomcard-linkinput" id="room-link-input" readonly/>
+          <button class="btn btn-s btn-sm" onclick="copyRoomLink()">COPY</button>
+        </div>
+      </div>
+    </div>
+    <div class="lobby-waiting" id="room-waiting">
+      <span class="waiting-dot"></span>
+      <span class="waiting-dot"></span>
+      <span class="waiting-dot"></span>
+      Waiting for opponent to join…
+    </div>
+    <div id="room-joined-msg" style="display:none;color:var(--green);font-family:"Teko",sans-serif;font-size:23px;letter-spacing:2px;text-align:center;margin-top:8px;">✓ OPPONENT JOINED!</div>
+    <button class="btn btn-s btn-sm" id="room-start-btn" onclick="startRoomGame()" style="display:none;margin-top:16px;">START GAME →</button>
+  </div>
+</div>
+
+<div id="howto" class="scr">
+  <button class="btn btn-s btn-sm back-btn" onclick="history.back()">← Back</button>
+  <div class="hwt">HOW TO PLAY</div>
+  <div class="hs"><div class="sn2">01</div><div class="st">A <strong>3×3 grid</strong> is randomly generated with F1 categories on rows and columns.</div></div>
+  <div class="hs"><div class="sn2">02</div><div class="st">Players alternate. Click a cell and name a driver satisfying <strong>both</strong> the row AND column.</div></div>
+  <div class="hs"><div class="sn2">03</div><div class="st">Each driver can only be used <strong>once</strong> per game. Plan strategically!</div></div>
+  <div class="hs"><div class="sn2">04</div><div class="st">Get <strong>3 in a row</strong> to win. Full board = draw.</div></div>
+  <div class="csec">
+    <div class="csect">Category Types</div>
+    <div class="cchips">
+      <span class="cc b-team">🏎 Teams — Ferrari, Mercedes, Red Bull…</span>
+      <span class="cc b-nat">🌍 Nations — British, German, Brazilian…</span>
+      <span class="cc b-troph">🏆 Trophies — Champion, 50+ Wins, Grand Slam…</span>
+      <span class="cc b-circ">🏟 Circuits — Monaco, Spa, Silverstone…</span>
+      <span class="cc b-tp">🎓 Team Principal — Toto, Horner, Brawn…</span>
+      <span class="cc b-tm">🤝 Teammate — of Hamilton, Senna, Vettel…</span>
+      <span class="cc b-wild">🃏 Wildcards — 3 Continents, Born 1990s, 3+ Teams…</span>
+    </div>
+  </div>
+</div>
+
+<!-- MATCHMAKING screen for Play Online -->
+<div id="matchmaking" class="scr">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 60px);gap:28px;">
+    <div class="lobby-title" style="color:var(--green);margin:0;">FINDING OPPONENT</div>
+    <div style="position:relative;width:110px;height:110px;">
+      <svg width="110" height="110" viewBox="0 0 110 110" style="transform:rotate(-90deg);">
+        <circle cx="55" cy="55" r="46" fill="none" stroke="var(--bd)" stroke-width="5"/>
+        <circle id="mm-ring" cx="55" cy="55" r="46" fill="none" stroke="var(--green)" stroke-width="5"
+          stroke-dasharray="289.03" stroke-dashoffset="289.03"
+          style="transition:stroke-dashoffset 1s linear;"/>
+      </svg>
+      <div id="mm-timer" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Teko',sans-serif;font-size:30px;font-weight:700;color:var(--t1);">0:00</div>
+    </div>
+    <div id="mm-status" style="font-family:'Teko',sans-serif;font-size:23px;letter-spacing:2px;color:var(--t2);text-align:center;">
+      <span class="waiting-dot"></span><span class="waiting-dot"></span><span class="waiting-dot"></span>
+      &nbsp;SEARCHING FOR A MATCH
+    </div>
+    <div id="mm-found" style="display:none;flex-direction:column;align-items:center;gap:10px;">
+      <div style="font-family:'Teko',sans-serif;font-size:30px;letter-spacing:3px;color:var(--green);">✓ OPPONENT FOUND!</div>
+      <div style="font-family:'Teko',sans-serif;font-size:20px;letter-spacing:2px;color:var(--t2);">STARTING GAME…</div>
+    </div>
+    <button class="btn btn-s btn-sm" onclick="cancelMatchmaking()">✕ Cancel</button>
+  </div>
+</div>
+
+<div id="game-same" class="scr">
+  <div class="gh">
+    <div class="gh-left">
+      <div class="score-table">
+        <div class="st-player x-side">
+          <div class="st-name x-col" id="same-name-x">Player 1</div>
+          <div class="st-pips" id="same-pips-x"></div>
+        </div>
+        <div class="st-middle">
+          <div class="st-vs">VS</div>
+          <div class="st-round" id="same-round-lbl">Round 1</div>
+        </div>
+        <div class="st-player o-side">
+          <div class="st-name o-col" id="same-name-o">Player 2</div>
+          <div class="st-pips" id="same-pips-o"></div>
+        </div>
+      </div>
+    </div>
+    <div class="gh-right">
+      <div class="timer-wrap">
+        <div class="timer-ring">
+          <svg width="52" height="52" viewBox="0 0 52 52">
+            <circle class="ring-bg" cx="26" cy="26" r="22"/>
+            <circle class="ring-fg" id="same-ring-fg" cx="26" cy="26" r="22" stroke-dasharray="138.2" stroke-dashoffset="0"/>
+          </svg>
+          <div class="timer-num" id="same-timer-num">60</div>
+        </div>
+        <div class="timer-lbl" id="same-timer-lbl">P1 TURN</div>
+      </div>
+      <div class="ti ti-x" id="same-ti">P1 — X</div>
+    </div>
+  </div>
+  <div class="gw" id="same-gg"></div>
+  <div class="action-bar">
+    <button class="btn btn-s btn-sm" onclick="confirmQuit()">✕ Quit</button>
+    <button class="btn btn-s btn-sm" id="same-skip-btn" onclick="skipTurn()">⏭ Skip Turn</button>
+    <button class="btn btn-s btn-sm" id="same-draw-btn" onclick="offerDraw()">🤝 Offer Draw</button>
+  </div>
+  <div class="ub" id="same-ub"></div>
+</div>
+
+<div id="game-bot" class="scr">
+  <div class="gh">
+    <div class="gh-left">
+      <div class="score-table">
+        <div class="st-player x-side">
+          <div class="st-name x-col" id="bot-name-x">You</div>
+          <div class="st-pips" id="bot-pips-x"></div>
+        </div>
+        <div class="st-middle">
+          <div class="st-vs">VS</div>
+          <div class="st-round" id="bot-round-lbl">Round 1</div>
+        </div>
+        <div class="st-player o-side">
+          <div class="st-name o-col" id="bot-name-o">Bot</div>
+          <div class="st-pips" id="bot-pips-o"></div>
+        </div>
+      </div>
+    </div>
+    <div class="gh-right">
+      <div class="timer-wrap">
+        <div class="timer-ring">
+          <svg width="52" height="52" viewBox="0 0 52 52">
+            <circle class="ring-bg" cx="26" cy="26" r="22"/>
+            <circle class="ring-fg" id="bot-ring-fg" cx="26" cy="26" r="22" stroke-dasharray="138.2" stroke-dashoffset="0"/>
+          </svg>
+          <div class="timer-num" id="bot-timer-num">60</div>
+        </div>
+        <div class="timer-lbl" id="bot-timer-lbl">YOUR TURN</div>
+      </div>
+      <div class="ti ti-x" id="bot-ti">You — X</div>
+    </div>
+  </div>
+  <div class="gw" id="bot-gg"></div>
+  <div class="action-bar">
+    <button class="btn btn-s btn-sm" onclick="confirmQuit()">✕ Quit</button>
+    <button class="btn btn-s btn-sm" id="bot-skip-btn" onclick="skipTurn()">⏭ Skip Turn</button>
+    <button class="btn btn-s btn-sm" id="bot-draw-btn" onclick="offerDraw()">🤝 Offer Draw</button>
+  </div>
+  <div class="ub" id="bot-ub"></div>
+</div>
+
+<div id="game-room" class="scr">
+  <div class="gh">
+    <div class="gh-left">
+      <div class="score-table">
+        <div class="st-player x-side">
+          <div class="st-name x-col" id="room-name-x">You</div>
+          <div class="st-pips" id="room-pips-x"></div>
+        </div>
+        <div class="st-middle">
+          <div class="st-vs">VS</div>
+          <div class="st-round" id="room-round-lbl">Round 1</div>
+        </div>
+        <div class="st-player o-side">
+          <div class="st-name o-col" id="room-name-o">Friend</div>
+          <div class="st-pips" id="room-pips-o"></div>
+        </div>
+      </div>
+    </div>
+    <div class="gh-right">
+      <div class="timer-wrap">
+        <div class="timer-ring">
+          <svg width="52" height="52" viewBox="0 0 52 52">
+            <circle class="ring-bg" cx="26" cy="26" r="22"/>
+            <circle class="ring-fg" id="room-ring-fg" cx="26" cy="26" r="22" stroke-dasharray="138.2" stroke-dashoffset="0"/>
+          </svg>
+          <div class="timer-num" id="room-timer-num">60</div>
+        </div>
+        <div class="timer-lbl" id="room-timer-lbl">YOUR TURN</div>
+      </div>
+      <div class="ti ti-x" id="room-ti">You — X</div>
+    </div>
+  </div>
+  <div class="gw" id="room-gg"></div>
+  <div class="action-bar">
+    <button class="btn btn-s btn-sm" onclick="confirmQuit()">✕ Quit</button>
+    <button class="btn btn-s btn-sm" id="room-skip-btn" onclick="skipTurn()">⏭ Skip Turn</button>
+    <button class="btn btn-s btn-sm" id="room-draw-btn" onclick="offerDraw()">🤝 Offer Draw</button>
+  </div>
+  <div class="ub" id="room-ub"></div>
+</div>
+</div>
+
+<div class="ov" id="mov">
+  <div class="modal">
+    <div class="mh" id="mttl">NAME A DRIVER</div>
+    <div class="mb">
+      <div class="mc" id="mctx"></div>
+      <div class="sw">
+        <input type="text" class="di" id="di" placeholder="Type a driver name…" autocomplete="off"/>
+        <div class="sugg" id="sugg"></div>
+      </div>
+      <div class="err" id="err"></div>
+      <div class="ma">
+        <button class="btn btn-s btn-sm" onclick="closeM()">Cancel</button>
+        <button class="btn btn-p btn-sm" onclick="submitD()">Confirm ✓</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="res">
+  <div class="rt" id="rtr"></div>
+  <div class="rtt" id="rtt"></div>
+  <div class="rs" id="rts"></div>
+  <div class="series-won" id="series-won"></div>
+  <div class="res-countdown" id="res-countdown"></div>
+</div>
+
+<!-- Disconnect overlay for room mode -->
+<div id="disconnect-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:24px;">
+  <div style="font-size:48px;">🔌</div>
+  <div id="disconnect-msg" style="font-family:'Teko',sans-serif;font-size:32px;letter-spacing:3px;color:var(--red);text-align:center;"></div>
+  <button class="btn btn-s" onclick="goHome()" style="margin-top:8px;">← Back to Home</button>
+</div>
+
+<!-- Quit-confirm overlay (replaces browser confirm dialog) -->
+<div id="quit-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9998;flex-direction:column;align-items:center;justify-content:center;gap:24px;">
+  <div style="font-size:48px;">🚪</div>
+  <div style="font-family:'Teko',sans-serif;font-size:28px;letter-spacing:3px;color:var(--red);text-align:center;">Leave the game?</div>
+  <div style="font-family:'Teko',sans-serif;font-size:18px;letter-spacing:2px;color:var(--t2);text-align:center;">Series progress will be lost.</div>
+  <div style="display:flex;gap:16px;margin-top:8px;">
+    <button class="btn btn-s" onclick="cancelQuit()">✕ Stay</button>
+    <button class="btn btn-p" onclick="confirmQuitYes()">← Leave</button>
+  </div>
+</div>
+
+
+
+<section id="info-footer" style="display:none;
+  background:linear-gradient(135deg,#0a0a0f 0%,#12121a 100%);
+  border-top:1px solid rgba(255,255,255,0.06);
+  padding:48px 24px 56px;
+  font-family:"Teko",sans-serif;
+  color:#c0c0d0;
+">
+  <div style="max-width:880px;margin:0 auto;">
+
+    <h2 style="
+      font-family:"Teko",sans-serif;
+      font-size:clamp(16px,2.6vw,20px);
+      letter-spacing:2px;
+      color:rgba(255,255,255,0.22);
+      text-transform:uppercase;
+      text-align:center;
+      margin:0 0 40px;
+      font-weight:700;
+    ">GRIDLOCK REFERENCE GUIDE</h2>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;">
+
+      <!-- TOP 5 CIRCUITS -->
+      <div style="
+        background:rgba(255,255,255,0.03);
+        border:1px solid rgba(255,255,255,0.07);
+        border-radius:12px;
+        padding:28px 28px 24px;
+      ">
+        <p style="
+          font-family:"Teko",sans-serif;
+          font-size:19px;
+          letter-spacing:2px;
+          color:#E10600;
+          text-transform:uppercase;
+          margin:0 0 20px;
+          font-weight:700;
+        ">🏁 TOP 5 CIRCUITS</p>
+
+        <div style="display:flex;flex-direction:column;gap:10px;">
+
+          <div style="display:flex;align-items:center;gap:14px;">
+            <span style="font-family:"Teko",sans-serif;font-size:25px;color:rgba(255,255,255,0.25);width:18px;text-align:right;">1</span>
+            <div>
+              <p style="margin:0;font-size:25px;font-weight:700;color:#f0f0f0;letter-spacing:0.5px;">Monza</p>
+              <p style="margin:0;font-size:21px;color:rgba(192,192,208,0.6);letter-spacing:1px;">AUTODROMO NAZIONALE · ITALY</p>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:14px;">
+            <span style="font-family:"Teko",sans-serif;font-size:25px;color:rgba(255,255,255,0.25);width:18px;text-align:right;">2</span>
+            <div>
+              <p style="margin:0;font-size:25px;font-weight:700;color:#f0f0f0;letter-spacing:0.5px;">Monaco</p>
+              <p style="margin:0;font-size:21px;color:rgba(192,192,208,0.6);letter-spacing:1px;">CIRCUIT DE MONACO · MONTE-CARLO</p>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:14px;">
+            <span style="font-family:"Teko",sans-serif;font-size:25px;color:rgba(255,255,255,0.25);width:18px;text-align:right;">3</span>
+            <div>
+              <p style="margin:0;font-size:25px;font-weight:700;color:#f0f0f0;letter-spacing:0.5px;">Silverstone</p>
+              <p style="margin:0;font-size:21px;color:rgba(192,192,208,0.6);letter-spacing:1px;">SILVERSTONE CIRCUIT · UNITED KINGDOM</p>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:14px;">
+            <span style="font-family:"Teko",sans-serif;font-size:25px;color:rgba(255,255,255,0.25);width:18px;text-align:right;">4</span>
+            <div>
+              <p style="margin:0;font-size:25px;font-weight:700;color:#f0f0f0;letter-spacing:0.5px;">Spa-Francorchamps</p>
+              <p style="margin:0;font-size:21px;color:rgba(192,192,208,0.6);letter-spacing:1px;">CIRCUIT DE SPA · BELGIUM</p>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:14px;">
+            <span style="font-family:"Teko",sans-serif;font-size:25px;color:rgba(255,255,255,0.25);width:18px;text-align:right;">5</span>
+            <div>
+              <p style="margin:0;font-size:25px;font-weight:700;color:#f0f0f0;letter-spacing:0.5px;">Interlagos</p>
+              <p style="margin:0;font-size:21px;color:rgba(192,192,208,0.6);letter-spacing:1px;">AUTODROMO JOSÉ CARLOS PACE · BRAZIL</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- TOP 3 TEAMS -->
+      <div style="
+        background:rgba(255,255,255,0.03);
+        border:1px solid rgba(255,255,255,0.07);
+        border-radius:12px;
+        padding:28px 28px 24px;
+      ">
+        <p style="
+          font-family:"Teko",sans-serif;
+          font-size:19px;
+          letter-spacing:2px;
+          color:#FFD700;
+          text-transform:uppercase;
+          margin:0 0 20px;
+          font-weight:700;
+        ">🏆 TOP 3 TEAMS</p>
+
+        <div style="display:flex;flex-direction:column;gap:20px;">
+
+          <div style="display:flex;align-items:flex-start;gap:14px;">
+            <span style="font-family:"Teko",sans-serif;font-size:25px;color:rgba(255,255,255,0.25);width:18px;text-align:right;padding-top:3px;">1</span>
+            <div>
+              <p style="margin:0;font-size:25px;font-weight:700;color:#E10600;letter-spacing:0.5px;">Scuderia Ferrari</p>
+              <p style="margin:0;font-size:21px;color:rgba(192,192,208,0.6);letter-spacing:1px;margin-top:2px;">FOUNDED 1929 · MARANELLO, ITALY</p>
+              
+            </div>
+          </div>
+
+          <div style="height:1px;background:rgba(255,255,255,0.06);margin-left:32px;"></div>
+
+          <div style="display:flex;align-items:flex-start;gap:14px;">
+            <span style="font-family:"Teko",sans-serif;font-size:25px;color:rgba(255,255,255,0.25);width:18px;text-align:right;padding-top:3px;">2</span>
+            <div>
+              <p style="margin:0;font-size:25px;font-weight:700;color:#FF8000;letter-spacing:0.5px;">McLaren Racing</p>
+              <p style="margin:0;font-size:21px;color:rgba(192,192,208,0.6);letter-spacing:1px;margin-top:2px;">FOUNDED 1963 · WOKING, UNITED KINGDOM</p>
+              
+            </div>
+          </div>
+
+          <div style="height:1px;background:rgba(255,255,255,0.06);margin-left:32px;"></div>
+
+          <div style="display:flex;align-items:flex-start;gap:14px;">
+            <span style="font-family:"Teko",sans-serif;font-size:25px;color:rgba(255,255,255,0.25);width:18px;text-align:right;padding-top:3px;">3</span>
+            <div>
+              <p style="margin:0;font-size:25px;font-weight:700;color:#00BFFF;letter-spacing:0.5px;">Williams Racing</p>
+              <p style="margin:0;font-size:21px;color:rgba(192,192,208,0.6);letter-spacing:1px;margin-top:2px;">FOUNDED 1977 · GROVE, UNITED KINGDOM</p>
+              
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="js/images.js"></script>
+  <script src="js/drivers.js"></script>
+  <script src="js/categories.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

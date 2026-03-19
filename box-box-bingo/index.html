@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Box Box Bingo — Test Your Racing Knowledge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Skeleton -->
+<div id="screen-skeleton" class="screen active">
+  <div class="skeleton-logo">BOX BOX BINGO</div>
+  <div class="skeleton-spinner"></div>
+</div>
+
+<!-- Home -->
+<div id="screen-home" class="screen">
+  <div class="bg-layer"></div>
+  <div class="home-inner">
+    <div class="logo-section">
+      <div class="wordmark">
+        <div class="f1-badge"><span>BOX BOX BINGO</span><div class="f1-badge-bg"></div></div>
+      </div>
+      <p class="tagline"><em>The ultimate racing knowledge challenge</em></p>
+      <div class="gold-rule">
+        <div class="gold-rule-line l"></div>
+        <div class="gold-rule-diamond"></div>
+        <div class="gold-rule-line r"></div>
+      </div>
+    </div>
+    <a class="how-to-play-link" onclick="showHowToPlay();return false;" href="/how-to-play">How To Play</a>
+    <div class="main-card">
+      <div class="card-top-line"></div>
+      <div class="corner-mark" style="top:8px;left:8px;border-width:1px 0 0 1px"></div>
+      <div class="corner-mark" style="top:8px;right:8px;border-width:1px 1px 0 0"></div>
+      <div class="corner-mark" style="bottom:8px;left:8px;border-width:0 0 1px 1px"></div>
+      <div class="corner-mark" style="bottom:8px;right:8px;border-width:0 1px 1px 0"></div>
+      <div class="card-body">
+        <div class="section-label"><div class="section-label-line"></div>Create a Private Room</div>
+        <p class="section-desc">Start a new room and share the code with your friends.</p>
+        <button class="cta-btn" onclick="showNameModal('create')" style="margin-bottom:0">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Create Room
+        </button>
+
+        <div class="or-divider"><div class="or-line"></div><span>OR</span><div class="or-line"></div></div>
+
+        <div class="section-label"><div class="section-label-line"></div>Join a Room</div>
+        <div class="join-row">
+          <input class="join-input" id="join-code-input" type="text" placeholder="Enter Code" maxlength="6" oninput="this.value=this.value.toUpperCase()">
+          <button class="join-btn" onclick="showNameModal('join')">JOIN</button>
+        </div>
+
+        <div class="or-divider"><div class="or-line"></div><span>OR</span><div class="or-line"></div></div>
+
+        <button class="solo-btn" onclick="startGame()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Play Solo
+        </button>
+      </div>
+    </div>
+    <p class="footer-note">Room stays open while the host tab is open</p>
+  </div>
+</div>
+
+<!-- How To Play -->
+<div id="screen-how-to-play" class="screen">
+  <div class="bg-layer"></div>
+  <div class="htp-inner">
+    <div class="htp-header">
+      <div class="f1-badge" style="margin-bottom:12px"><span>BOX BOX BINGO</span><div class="f1-badge-bg"></div></div>
+      <h2 class="htp-title">How To Play</h2>
+      <div class="gold-rule" style="margin-top:12px">
+        <div class="gold-rule-line l"></div>
+        <div class="gold-rule-diamond"></div>
+        <div class="gold-rule-line r"></div>
+      </div>
+    </div>
+
+    <div class="htp-body">
+
+      <div class="htp-section">
+        <div class="htp-section-icon">🏎️</div>
+        <h3 class="htp-section-title">The Objective</h3>
+        <p class="htp-section-text">You are shown F1 drivers one at a time. For each driver, assign them to a category on your bingo board. Your goal is to correctly fill as many of the 15 categories as possible before you run out of drivers.</p>
+      </div>
+
+      <div class="htp-section">
+        <div class="htp-section-icon">📋</div>
+        <h3 class="htp-section-title">The Board</h3>
+        <p class="htp-section-text">Your board has 15 category cells — stats, nationalities, teams, decades, and more. Each game generates a fresh random set of categories, so no two games are the same.</p>
+      </div>
+
+      <div class="htp-section">
+        <div class="htp-section-icon">⏱️</div>
+        <h3 class="htp-section-title">The Timer</h3>
+        <p class="htp-section-text">You have <strong>15 seconds</strong> per driver. If the timer runs out before you assign them, they are skipped and you move on to the next driver. You can also skip manually at any time.</p>
+      </div>
+
+      <div class="htp-section">
+        <div class="htp-section-icon">✅</div>
+        <h3 class="htp-section-title">Assigning a Driver</h3>
+        <p class="htp-section-text">Click any open category cell to assign the current driver to it. If the driver matches the category, it counts as correct. If not, it counts as wrong — and that cell is locked. You only get one shot per cell.</p>
+      </div>
+
+      <div class="htp-section">
+        <div class="htp-section-icon">🃏</div>
+        <h3 class="htp-section-title">The Driver Pool</h3>
+        <p class="htp-section-text">Each game draws <strong>40 drivers</strong> from the full roster. The pool is guaranteed to contain at least one valid answer for every category on your board — so every category is always winnable.</p>
+      </div>
+
+      <div class="htp-section">
+        <div class="htp-section-icon">🏆</div>
+        <h3 class="htp-section-title">Scoring</h3>
+        <p class="htp-section-text">Your final score is the number of categories you answered correctly out of 15. Your total time is also tracked — in multiplayer, time is used as a tiebreaker when two players have the same score.</p>
+      </div>
+
+      <div class="htp-section">
+        <div class="htp-section-icon">👥</div>
+        <h3 class="htp-section-title">Multiplayer</h3>
+        <p class="htp-section-text">Create a private room and share the code or link with friends. Everyone plays the same 40 drivers in the same order, but each player gets their own randomly generated categories. First to finish doesn't win — most correct answers does.</p>
+      </div>
+
+    </div>
+
+    <button class="htp-back-btn" onclick="goHome()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Back to Main Menu
+    </button>
+  </div>
+</div>
+
+<!-- Game -->
+<div id="screen-game" class="screen">
+  <div class="game-ambient"></div>
+  <div class="game-inner">
+    <div class="game-header">
+      <div class="header-logo panel">
+        <div class="header-logo-top"></div>
+        <div class="header-logo-inner">
+          <a onclick="goHome()" style="display:flex;align-items:center;gap:0;cursor:pointer;text-decoration:none" title="Back to main menu">
+          <div class="logo-f1"><span>BOX BOX</span><div class="logo-f1-bg"></div></div>
+          <h1 class="logo-title">BINGO</h1>
+          </a>
+          <div class="game-timer-total">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span id="total-timer">0:00</span>
+          </div>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-box panel">
+          <div class="rivet" style="top:3px;left:3px"></div><div class="rivet" style="top:3px;right:3px"></div>
+          <div class="rivet" style="bottom:3px;left:3px"></div><div class="rivet" style="bottom:3px;right:3px"></div>
+          <div class="stat-label">Answered</div>
+          <div class="stat-value"><span id="stat-answered">0</span><span class="sub">/15</span></div>
+        </div>
+        <div class="stat-box panel">
+          <div class="rivet" style="top:3px;left:3px"></div><div class="rivet" style="top:3px;right:3px"></div>
+          <div class="rivet" style="bottom:3px;left:3px"></div><div class="rivet" style="bottom:3px;right:3px"></div>
+          <div class="stat-label">Remaining</div>
+          <div class="stat-value" id="stat-remaining" style="color:var(--silver)">55</div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="driver-card panel" id="driver-card">
+      <div class="rivet" style="top:6px;left:6px"></div><div class="rivet" style="top:6px;right:6px"></div>
+      <div class="rivet" style="bottom:6px;left:6px"></div><div class="rivet" style="bottom:6px;right:6px"></div>
+      <div class="driver-info">
+        <div>
+          <div class="driver-pill">Driver Identified</div>
+          <h2 class="driver-name" id="driver-name">Loading...</h2>
+        </div>
+        <div class="driver-actions">
+          <button class="skip-btn" onclick="handleSkip()">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 19 22 12 13 5 13 19"/><line x1="2" y1="5" x2="2" y2="19"/><line x1="2" y1="12" x2="12" y2="12"/></svg>
+            SKIP
+          </button>
+          <span class="driver-hint">Select a matching category</span>
+        </div>
+      </div>
+      <div class="driver-timer-block" id="timer-block">
+        <div class="timer-ring-wrap">
+          <svg class="timer-ring-svg" width="70" height="70">
+            <circle cx="35" cy="35" r="24" fill="none" stroke="rgba(58,58,82,.6)" stroke-width="2.5"/>
+            <circle id="timer-arc" cx="35" cy="35" r="24" fill="none" stroke="#c9a84c" stroke-width="2.5" stroke-linecap="round" style="transition:stroke-dasharray 1s linear,stroke .4s ease"/>
+          </svg>
+          <div class="timer-ring-inner">
+            <div class="timer-ring-num" id="timer-num" style="color:#c9a84c">15</div>
+            <div class="timer-ring-label" id="timer-label" style="color:rgba(201,168,76,.7)">sec</div>
+          </div>
+        </div>
+      </div>
+      <div class="timer-bar-wrap"><div class="timer-bar-fill" id="timer-bar" style="width:100%;background:#c9a84c"></div></div>
+    </div>
+
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-bar" style="width:0%"></div></div>
+    <div class="cat-grid" id="cat-grid"></div>
+  </div>
+</div>
+
+<!-- Name Modal -->
+<div id="modal-name" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(5,5,7,.9);align-items:center;justify-content:center;backdrop-filter:blur(6px);padding:18px" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="card-top-line"></div>
+    <div style="padding:28px 28px 0">
+      <div style="text-align:center;margin-bottom:26px">
+        <div class="wordmark" style="justify-content:center;margin-bottom:8px">
+          <span class="bingo-word" style="font-size:2rem">BOX BOX BINGO</span>
+        </div>
+        <p class="tagline" style="font-size:.85rem">Create your driver profile to join the race</p>
+      </div>
+      <div class="section-label" style="margin-bottom:8px"><div class="section-label-line"></div>Driver Name</div>
+      <input class="join-input" id="player-name-input" type="text" placeholder="" maxlength="20" style="width:100%;margin-bottom:16px;text-transform:none;letter-spacing:.04em;font-size:1rem" onkeydown="if(event.key==='Enter')confirmName()">
+      <button class="cta-btn" id="modal-confirm-btn" onclick="confirmName()" style="clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%)">Join Room</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lobby Screen -->
+<div id="screen-lobby" class="screen" style="flex-direction:column;align-items:center;padding:28px 18px;background:radial-gradient(ellipse 120% 50% at 50% 110%,rgba(180,0,30,1) 0%,rgba(100,0,15,.85) 30%,var(--void) 65%)">
+  <div class="bg-layer"></div>
+  <div class="home-inner" style="max-width:660px;position:relative;z-index:2">
+    <div class="panel" style="margin-bottom:10px;padding:0;overflow:hidden">
+      <div class="card-top-line"></div>
+      <div style="padding:20px 24px;display:flex;gap:20px;align-items:center">
+        <div style="width:120px;height:120px;flex-shrink:0;display:flex;align-items:center;justify-content:center">
+          <canvas id="qr-canvas" width="120" height="120"></canvas>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div class="section-label" style="margin-bottom:4px"><div class="section-label-line"></div>Room Code</div>
+          <div id="lobby-room-code" style="font-family:'Teko',sans-serif;font-size:3rem;letter-spacing:.14em;color:var(--ivory);line-height:1;margin-bottom:10px">------</div>
+          <div class="section-label" style="margin-bottom:6px"><div class="section-label-line"></div>Share Link</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input id="lobby-share-link" readonly style="flex:1;background:var(--abyss);border:1px solid var(--bolt);color:var(--chrome);padding:6px 10px;font-size:.75rem;font-family:'Teko',sans-serif;min-width:0" value="">
+            <button onclick="copyRoomLink(this)" style="padding:6px 14px;background:var(--iron);border:1px solid var(--goldDim);color:var(--goldMid);font-weight:800;font-size:.72rem;letter-spacing:.18em;cursor:pointer;font-family:'Teko',sans-serif">COPY</button>
+          </div>
+        </div>
+      </div>
+      <div style="padding:0 24px 8px;font-size:.55rem;color:var(--dim);letter-spacing:.14em;text-transform:uppercase;text-align:center">Scan to Join</div>
+    </div>
+    <div class="panel" style="padding:0;overflow:hidden">
+      <div style="padding:16px 20px 10px;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div class="section-label" style="margin-bottom:2px"><div class="section-label-line"></div>Lobby</div>
+          <div style="font-family:'Teko',sans-serif;font-size:1.9rem;letter-spacing:.08em;color:var(--ivory);display:flex;align-items:center;gap:10px">
+            Waiting For Players
+            <span id="lobby-dots" style="color:var(--goldMid);font-size:1.1rem;animation:pulseDot 1.4s infinite">•••</span>
+          </div>
+        </div>
+        <div style="background:var(--abyss);border:1px solid var(--bolt);padding:10px 18px;text-align:center;min-width:70px">
+          <div id="lobby-player-count" style="font-family:'Teko',sans-serif;font-size:2.5rem;color:var(--goldMid);line-height:1">1</div>
+          <div style="font-size:.58rem;letter-spacing:.18em;color:var(--dim);text-transform:uppercase">Player</div>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:.82rem">
+          <thead><tr style="border-top:1px solid var(--bolt);border-bottom:1px solid var(--bolt)">
+            <th style="padding:7px 20px;text-align:left;font-size:.6rem;letter-spacing:.22em;color:var(--goldDim);font-weight:700;width:36px">#</th>
+            <th style="padding:7px 12px;text-align:left;font-size:.6rem;letter-spacing:.22em;color:var(--goldDim);font-weight:700">Driver</th>
+            <th style="padding:7px 20px;text-align:right;font-size:.6rem;letter-spacing:.22em;color:var(--goldDim);font-weight:700">Status</th>
+          </tr></thead>
+          <tbody id="lobby-players-list"></tbody>
+        </table>
+      </div>
+      <div style="padding:16px 20px">
+        <button id="start-race-btn" class="cta-btn" onclick="hostStartRace()" style="clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%)">Start Race — 1 Player</button>
+        <p id="lobby-host-hint" style="text-align:center;font-family:'Teko',sans-serif;font-style:italic;font-size:.82rem;color:var(--goldMid);margin-top:8px">You can start alone or wait for more drivers to join.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Multiplayer Results -->
+<div id="screen-mp-results" class="screen" style="flex-direction:column;align-items:center;background:radial-gradient(ellipse 120% 50% at 50% 110%,rgba(180,0,30,1) 0%,rgba(100,0,15,.85) 30%,var(--void) 65%);padding:28px 18px;min-height:100vh">
+  <div style="width:100%;max-width:700px;position:relative;z-index:2">
+    <div class="panel" style="padding:20px 24px;margin-bottom:10px">
+      <div class="section-label" style="margin-bottom:4px"><div class="section-label-line"></div>Room Code</div>
+      <div id="mp-res-room-code" style="font-family:'Teko',sans-serif;font-size:2.5rem;letter-spacing:.14em;color:var(--ivory);line-height:1;margin-bottom:10px">------</div>
+      <div class="section-label" style="margin-bottom:6px"><div class="section-label-line"></div>Share Link</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="mp-res-share-link" readonly style="flex:1;background:var(--abyss);border:1px solid var(--bolt);color:var(--chrome);padding:6px 10px;font-size:.75rem;font-family:'Teko',sans-serif;min-width:0" value="">
+        <button onclick="copyMpLink(this)" style="padding:6px 14px;background:var(--iron);border:1px solid var(--goldDim);color:var(--goldMid);font-weight:800;font-size:.72rem;letter-spacing:.18em;cursor:pointer;font-family:'Teko',sans-serif">COPY</button>
+      </div>
+    </div>
+    <div class="panel" style="padding:28px 24px 20px;margin-bottom:10px;text-align:center">
+      <div style="font-size:2.8rem;margin-bottom:10px">🏆</div>
+      <div class="section-label" style="justify-content:center;margin-bottom:6px"><div class="section-label-line" style="flex:0;width:24px"></div>Race Winner<div class="section-label-line" style="flex:0;width:24px"></div></div>
+      <div id="mp-winner-name" style="font-family:'Teko',sans-serif;font-size:3rem;letter-spacing:.1em;color:var(--goldLight);line-height:1">—</div>
+      <div style="display:flex;justify-content:center;gap:28px;margin-top:16px;flex-wrap:wrap">
+        <div style="text-align:center"><div id="mp-my-correct" style="font-family:'Teko',sans-serif;font-size:2.2rem;color:var(--ivory)">0</div><div style="font-size:.6rem;letter-spacing:.22em;color:var(--chrome);text-transform:uppercase">Correct</div></div>
+        <div style="width:1px;background:var(--bolt)"></div>
+        <div style="text-align:center"><div id="mp-my-time" style="font-family:'Teko',sans-serif;font-size:2.2rem;color:var(--ivory)">0:00</div><div style="font-size:.6rem;letter-spacing:.22em;color:var(--chrome);text-transform:uppercase">Time</div></div>
+        <div style="width:1px;background:var(--bolt)"></div>
+        <div style="text-align:center"><div id="mp-my-streak" style="font-family:'Teko',sans-serif;font-size:2.2rem;color:var(--ivory)">0×</div><div style="font-size:.6rem;letter-spacing:.22em;color:var(--chrome);text-transform:uppercase">Streak 🔥</div></div>
+      </div>
+    </div>
+    <div class="panel" style="padding:0;overflow:hidden;margin-bottom:10px">
+      <div style="padding:14px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--bolt)">
+        <span style="font-family:'Teko',sans-serif;font-size:1.4rem;letter-spacing:.1em;color:var(--ivory)">Race Results</span>
+        <span style="margin-left:auto;display:flex;align-items:center;gap:5px;font-size:.65rem;letter-spacing:.18em;color:var(--green)"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span>Live</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:.82rem">
+        <thead><tr style="border-bottom:1px solid var(--bolt)">
+          <th style="padding:8px 16px;text-align:left;font-size:.62rem;letter-spacing:.2em;color:var(--goldMid);font-weight:700;width:44px">Pos</th>
+          <th style="padding:8px 10px;text-align:left;font-size:.62rem;letter-spacing:.2em;color:var(--goldMid);font-weight:700">Driver</th>
+          <th style="padding:8px 14px;text-align:right;font-size:.62rem;letter-spacing:.2em;color:var(--goldMid);font-weight:700">Score</th>
+          <th style="padding:8px 14px;text-align:right;font-size:.62rem;letter-spacing:.2em;color:var(--goldMid);font-weight:700">Time</th>
+          <th style="padding:8px 16px;text-align:right;font-size:.62rem;letter-spacing:.2em;color:var(--goldMid);font-weight:700">Streak</th>
+        </tr></thead>
+        <tbody id="mp-leaderboard"></tbody>
+      </table>
+      <div style="padding:8px 16px;text-align:center;font-family:'Teko',sans-serif;font-style:italic;font-size:.78rem;color:var(--goldMid)">Sorted by score · tiebreak by fastest time · updates live as drivers finish</div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <button onclick="showMyBoard()" style="display:flex;align-items:center;gap:8px;padding:12px 28px;font-weight:900;font-size:.85rem;letter-spacing:.2em;text-transform:uppercase;color:var(--goldLight);background:transparent;border:1px solid var(--goldDim);cursor:pointer;font-family:'Teko',sans-serif;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:all .18s" onmouseover="this.style.background='rgba(201,168,76,.1)'" onmouseout="this.style.background='transparent'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        My Board
+      </button>
+      <button onclick="mpPlayAgain()" class="results-play-again" style="clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.86"/></svg>
+        Play Again
+      </button>
+      <button onclick="showScreen('screen-home')" style="padding:12px 24px;font-weight:900;font-size:.85rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ivory);background:var(--iron);border:1px solid var(--bolt);cursor:pointer;font-family:'Teko',sans-serif">
+        + New Room
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- My Board Modal -->
+<div id="modal-my-board" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(5,5,7,.92);align-items:flex-start;justify-content:center;backdrop-filter:blur(8px);padding:24px 16px;overflow-y:auto" onclick="if(event.target===this)closeMyBoard()">
+  <div style="width:100%;max-width:640px;background:linear-gradient(155deg,var(--gunmetal) 0%,var(--jet) 60%,var(--slate) 100%);border:1px solid var(--bolt);overflow:hidden;animation:fadeUp .3s cubic-bezier(.16,1,.3,1) both;margin:auto">
+    <div style="height:1px;background:linear-gradient(90deg,transparent,var(--goldDim) 20%,var(--goldMid) 50%,var(--goldDim) 80%,transparent)"></div>
+    <div style="padding:20px 24px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bolt)">
+      <div>
+        <div class="section-label" style="margin-bottom:2px"><div class="section-label-line"></div>Private View</div>
+        <div style="font-family:'Teko',sans-serif;font-size:1.8rem;letter-spacing:.1em;color:var(--ivory)">My Board</div>
+      </div>
+      <button onclick="closeMyBoard()" style="background:var(--iron);border:1px solid var(--bolt);color:var(--chrome);width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;flex-shrink:0">✕</button>
+    </div>
+    <div style="padding:16px 24px 24px">
+      <div id="my-board-stats" style="display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap"></div>
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="border-bottom:1px solid var(--bolt)">
+            <th style="padding:7px 10px;text-align:left;font-size:.62rem;letter-spacing:.22em;color:var(--goldMid);font-weight:700;width:90px">Result</th>
+            <th style="padding:7px 10px;text-align:left;font-size:.62rem;letter-spacing:.22em;color:var(--goldMid);font-weight:700">Category</th>
+            <th style="padding:7px 10px;text-align:right;font-size:.62rem;letter-spacing:.22em;color:var(--goldMid);font-weight:700">Driver Assigned</th>
+          </tr>
+        </thead>
+        <tbody id="my-board-list"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Results -->
+<div id="screen-results" class="screen">
+  <div class="results-inner">
+    <div class="results-header panel">
+      <div class="rivet" style="top:6px;left:6px"></div><div class="rivet" style="top:6px;right:6px"></div>
+      <div class="rivet" style="bottom:6px;left:6px"></div><div class="rivet" style="bottom:6px;right:6px"></div>
+      <span style="font-size:.7rem;letter-spacing:.2em;color:var(--goldDim);text-transform:uppercase">Race Complete</span>
+      <span style="font-family:'Teko',sans-serif;font-size:1.7rem;letter-spacing:.18em;color:var(--ivory)">RESULTS</span>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--goldMid)" stroke-width="2"><polyline points="22 4 12 14.01 9 11.01"/><path d="M21 2H3v7a9 9 0 0018 0V2z"/></svg>
+    </div>
+    <div class="results-divider"></div>
+    <div class="results-score-hero">
+      <div class="results-score-num"><span id="res-correct">0</span><span class="results-score-denom">/15</span></div>
+      <p class="results-score-sub">Categories matched correctly</p>
+    </div>
+    <div class="results-stats-grid">
+      <div class="results-stat panel">
+        <div class="rivet" style="top:4px;left:4px"></div><div class="rivet" style="top:4px;right:4px"></div>
+        <div class="rivet" style="bottom:4px;left:4px"></div><div class="rivet" style="bottom:4px;right:4px"></div>
+        <div class="results-stat-val" id="res-time">0:00</div>
+        <div class="results-stat-label">Time</div>
+      </div>
+      <div class="results-stat panel">
+        <div class="rivet" style="top:4px;left:4px"></div><div class="rivet" style="top:4px;right:4px"></div>
+        <div class="rivet" style="bottom:4px;left:4px"></div><div class="rivet" style="bottom:4px;right:4px"></div>
+        <div class="results-stat-val" id="res-streak">0×</div>
+        <div class="results-stat-label">Best Streak 🔥</div>
+      </div>
+      <div class="results-stat panel">
+        <div class="rivet" style="top:4px;left:4px"></div><div class="rivet" style="top:4px;right:4px"></div>
+        <div class="rivet" style="bottom:4px;left:4px"></div><div class="rivet" style="bottom:4px;right:4px"></div>
+        <div class="results-stat-val" id="res-pct">0%</div>
+        <div class="results-stat-label">Accuracy</div>
+      </div>
+    </div>
+    <div class="results-cats panel">
+      <div class="card-top-line" style="margin:-16px -20px 12px"></div>
+      <div class="results-cats-title">Category Breakdown</div>
+      <table class="results-cat-table">
+        <thead>
+          <tr>
+            <th style="width:80px">Result</th>
+            <th>Category</th>
+            <th>Driver Assigned</th>
+          </tr>
+        </thead>
+        <tbody id="res-cats-list"></tbody>
+      </table>
+    </div>
+    <div class="results-actions">
+      <button class="results-play-again" onclick="startGame()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.86"/></svg>
+        Play Again
+      </button>
+      <button class="results-play-again" onclick="goHome()" style="background:rgba(30,30,50,.7);border-color:rgba(150,150,180,.25);color:var(--silver)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Main Menu
+      </button>
+    </div>
+    <p class="results-end-note" id="res-end-note">Categories change every game — you can do better.</p>
+  </div>
+</div>
+
+<!-- JS: load order matters — images/drivers/categories must come before game -->
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="js/images.js"></script>
+<script src="js/drivers.js"></script>
+<script src="js/categories.js"></script>
+<script src="js/game.js"></script>
+
+</body>
+</html>
