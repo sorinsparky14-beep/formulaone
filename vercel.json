@@ -1,8 +1,8 @@
 {
   "rewrites": [
-    { "source": "/lights-out-and-toe-away/play-with-a-friend", "destination": "/lights-out-and-toe-away/index.html" },
-    { "source": "/lights-out-and-toe-away/:path*", "destination": "/lights-out-and-toe-away/index.html" },
     { "source": "/box-box-bingo/how-to-play", "destination": "/box-box-bingo/index.html" },
-    { "source": "/box-box-bingo/:path*", "destination": "/box-box-bingo/index.html" }
+    { "source": "/box-box-bingo/(.*)", "destination": "/box-box-bingo/index.html" },
+    { "source": "/lights-out-and-toe-away/play-with-a-friend", "destination": "/lights-out-and-toe-away/index.html" },
+    { "source": "/lights-out-and-toe-away/(.*)", "destination": "/lights-out-and-toe-away/index.html" }
   ]
 }
