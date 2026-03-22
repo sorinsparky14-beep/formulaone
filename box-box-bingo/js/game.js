@@ -1,4 +1,4 @@
-// =============================================================================
+/// =============================================================================
 // BOX BOX BINGO — game.js
 // Multiplayer: PartyKit WebSocket Server (suportă 1000+ jucători simultan)
 //
@@ -713,16 +713,21 @@ function showMyBoard() {
     gs.categories.forEach(cat => {
       const c   = gs.correct.has(cat.id), w = gs.wrong.has(cat.id);
       const drv = gs.assigned.get(cat.id);
-      const badgeLabel = c ? '✓ Correct' : w ? '✗ Wrong' : '— Skipped';
+      const state = c ? 'correct' : w ? 'wrong' : 'unanswered';
+      const badgeLabel = c
+        ? '<span style="font-style:normal;text-transform:none">✓</span> Correct'
+        : w
+        ? '<span style="font-style:normal;text-transform:none">✗</span> Wrong'
+        : '<span style="font-style:normal;text-transform:none">—</span> Skipped';
       const badgeStyle = c
-        ? 'background:rgba(0,214,143,.25);color:#00ffb0;border:1px solid rgba(0,214,143,.5)'
+        ? 'background:rgba(0,214,143,.25);color:#00ffb0;border:1px solid rgba(0,214,143,.5);text-shadow:0 0 8px rgba(0,214,143,.6)'
         : w
         ? 'background:rgba(232,0,45,.12);color:var(--red);border:1px solid rgba(232,0,45,.25)'
         : 'background:rgba(90,90,122,.15);color:var(--dim);border:1px solid rgba(90,90,122,.25)';
       const tr = document.createElement('tr');
       tr.style.borderBottom = '1px solid var(--bolt)';
       tr.innerHTML = `
-        <td style="padding:8px 10px"><span style="padding:3px 8px;font-size:.65rem;letter-spacing:.14em;font-weight:700;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;${badgeStyle}">${badgeLabel}</span></td>
+        <td style="padding:8px 10px"><span class="results-cat-badge ${state}" style="${badgeStyle}">${badgeLabel}</span></td>
         <td style="padding:8px 10px;color:var(--silver);font-size:.82rem">${cat.text}</td>
         <td style="padding:8px 10px;text-align:right;color:var(--chrome);font-size:.82rem">${drv ? drv.name : '—'}</td>`;
       list.appendChild(tr);
