@@ -10,7 +10,7 @@
 
 // ── PartyKit config ───────────────────────────────────────────────────────────
 // Înlocuiește cu URL-ul tău după deploy: npx partykit deploy partykit-server.ts --name box-box-bingo
-const PARTYKIT_HOST = 'box-box-bingo.<USER>.partykit.dev';
+const PARTYKIT_HOST = 'box-box-bingo.sorinsparky14-beep.partykit.dev';
 
 // == MP STATE =================================================================
 let mpMode        = null;   // 'solo' | 'host' | 'join'
