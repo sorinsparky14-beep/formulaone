@@ -108,8 +108,8 @@ function _connectToRoom(code, isHost) {
   };
 
   _ws.onclose = () => {
-    if (mpMode !== null) {
-      // Dacă eram conectați și s-a închis neașteptat
+    // Only show error if we're still actively in a game/lobby (not already done)
+    if (mpMode !== null && !(gs && gs.done)) {
       _showConnError('Connection lost. Please try again.');
     }
   };
@@ -131,7 +131,7 @@ function _handleServerMessage(msg) {
       // Starea curentă la conectare (ex. reconectare)
       mpPlayers = msg.payload.players;
       mpSeed    = msg.payload.seed;
-      if (msg.payload.started && mpMode === 'join') {
+      if (msg.payload.started && mpMode !== 'host') {
         startMpGame();
       } else {
         updateLobbyUI();
@@ -287,13 +287,14 @@ function copyMpLink(btn) {
 }
 
 // == QR CODE ==================================================================
-function drawQR(code, url) {
+function drawQR(code, url, _attempt) {
   const canvas = document.getElementById('qr-canvas');
   if (!canvas) return;
 
-  // Daca libraria nu e inca incarcata, incearca din nou dupa 300ms
+  // Daca libraria nu e inca incarcata, incearca din nou dupa 300ms (max 10 incercari)
   if (typeof QRCode === 'undefined') {
-    setTimeout(() => drawQR(code, url), 300);
+    if ((_attempt || 0) >= 10) { console.warn('QRCode library failed to load'); return; }
+    setTimeout(() => drawQR(code, url, (_attempt || 0) + 1), 300);
     return;
   }
 
@@ -327,15 +328,16 @@ function updateLobbyUI() {
   const tbody = document.getElementById('lobby-players-list');
   tbody.innerHTML = '';
   players.sort((a, b) => a.joinedAt - b.joinedAt).forEach((p, i) => {
-    const isMe = p.id === PLAYER_ID;
+    const isMe    = p.id === PLAYER_ID;
+    const safeName = p.name.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     const tr   = document.createElement('tr');
     tr.className = 'lobby-player-row';
     tr.innerHTML = `
       <td style="padding:10px 20px;color:var(--dim);font-size:.8rem">${i + 1}</td>
       <td style="padding:10px 12px;display:flex;align-items:center;gap:10px">
-        <div class="player-avatar">${p.name[0].toUpperCase()}</div>
+        <div class="player-avatar">${safeName[0].toUpperCase()}</div>
         <span style="font-weight:800;letter-spacing:.06em;color:${isMe ? 'var(--ivory)' : 'var(--silver)'}">
-          ${p.name}${isMe ? ' <span style="color:var(--goldMid);font-size:.7em">(You)</span>' : ''}
+          ${safeName}${isMe ? ' <span style="color:var(--goldMid);font-size:.7em">(You)</span>' : ''}
         </span>
       </td>
       <td style="padding:10px 20px;text-align:right">
@@ -409,6 +411,8 @@ function startTimers() {
     if (gs.time <= 0) {
       gs.idx++; gs.time = 15; gs.streak = 0;
       if (gs.idx >= gs.drivers.length) { gs.done = true; endGame(); return; }
+      // Also end if all categories were already answered (skipped past last driver)
+      if (gs.correct.size + gs.wrong.size >= gs.categories.length) { gs.done = true; endGame(); return; }
       renderDriver(); renderStats(); renderGrid();
     }
     updateTimerUI();
@@ -428,6 +432,7 @@ function renderDriver() {
 }
 
 function updateTimerUI() {
+  if (!gs) return;
   const t    = gs.time;
   const circ = 2 * Math.PI * 24;
   const color = t <= 5 ? '#e8002d' : t <= 9 ? '#f5a623' : '#c9a84c';
@@ -446,14 +451,14 @@ function updateTimerUI() {
 }
 
 function renderStats() {
+  if (!gs) return;
   const answered  = gs.correct.size + gs.wrong.size;
-  const remaining = gs.drivers.length - gs.idx;
+  const remaining = Math.max(0, gs.drivers.length - gs.idx);
   document.getElementById('stat-answered').textContent  = answered;
   const remEl = document.getElementById('stat-remaining');
   remEl.textContent = remaining;
   remEl.style.color = remaining <= 5 ? 'var(--amber)' : 'var(--silver)';
   document.getElementById('progress-bar').style.width = `${(answered / gs.categories.length) * 100}%`;
-
 }
 
 function renderGrid() {
@@ -517,6 +522,7 @@ function handleSkip() {
   if (!gs || gs.done) return;
   gs.idx++; gs.time = 15; gs.streak = 0;
   if (gs.idx >= gs.drivers.length) { gs.done = true; endGame(); return; }
+  if (gs.correct.size + gs.wrong.size >= gs.categories.length) { gs.done = true; endGame(); return; }
   renderDriver(); renderStats(); renderGrid(); updateTimerUI();
 }
 
@@ -534,11 +540,17 @@ function handleAssign(catId) {
   gs.streak = hit ? gs.streak + 1 : 0;
   gs.best   = Math.max(gs.best, gs.streak);
 
-
-
-  if (gs.correct.size + gs.wrong.size >= gs.categories.length) { gs.done = true; assigning = false; endGame(); return; }
+  // Increment idx FIRST so gs.idx is always up to date before endGame
   gs.idx++; gs.time = 15;
-  if (gs.idx >= gs.drivers.length) { gs.done = true; assigning = false; endGame(); return; }
+
+  // All categories answered — game over
+  if (gs.correct.size + gs.wrong.size >= gs.categories.length) {
+    gs.done = true; assigning = false; endGame(); return;
+  }
+  // No more drivers — game over
+  if (gs.idx >= gs.drivers.length) {
+    gs.done = true; assigning = false; endGame(); return;
+  }
   renderDriver(); renderStats(); renderGrid(); updateTimerUI();
   assigning = false;
 }
@@ -550,11 +562,20 @@ function endGame() {
   assigning = false;
 
   if (mpMode !== 'solo' && mpRoomCode) {
-    showMpResults();
+    try {
+      showMpResults();
+    } catch(e) {
+      console.error('[endGame] showMpResults failed:', e);
+      // Fallback: show solo results so the game doesn't freeze
+      _showSoloResults();
+    }
     return;
   }
 
-  // ── Solo ──
+  _showSoloResults();
+}
+
+function _showSoloResults() {
   const correct = gs.correct.size, total = gs.categories.length;
   const pct     = Math.round((correct / total) * 100);
 
