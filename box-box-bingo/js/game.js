@@ -275,6 +275,7 @@ function _showConnError(msg) {
 let lobbyInterval = null;
 
 function showLobby() {
+  history.pushState({}, '', '/box-box-bingo/room');
   showScreen('screen-lobby');
   document.getElementById('lobby-room-code').textContent = mpRoomCode;
   const link = window.location.href.split('?')[0] + '?room=' + mpRoomCode;
@@ -830,6 +831,7 @@ function startGame() {
   hostConn = null; guestConns = {}; mpPlayers = {};
   mpMode = 'solo'; mpRoomCode = null; mpPlayerName = null;
   gs = buildGame(); prevStreak = 0; assigning = false;
+  history.pushState({}, '', '/box-box-bingo/play-solo');
   showScreen('screen-game');
   renderDriver(); renderStats(); renderGrid(); updateTimerUI();
   document.getElementById('total-timer').textContent = '0:00';
@@ -852,9 +854,13 @@ window.addEventListener('load', () => {
 });
 
 window.addEventListener('popstate', () => {
-  if (window.location.pathname === '/box-box-bingo/how-to-play') {
+  const path = window.location.pathname;
+  if (path === '/box-box-bingo/how-to-play') {
     showScreen('screen-how-to-play');
+  } else if (path === '/box-box-bingo/room' || path === '/box-box-bingo/play-solo') {
+    // Back from room or play-solo → go home
+    goHome();
   } else {
-    showScreen('screen-home');
+    goHome();
   }
 });
