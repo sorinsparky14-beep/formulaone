@@ -203,18 +203,12 @@ function joinRoom() {
     hostConn.on('data', msg => _guestReceive(msg));
 
     hostConn.on('close', () => {
-      // Only redirect to home if the game has not yet started.
-      // Mid-game and post-game (results screen) disconnects are non-fatal —
-      // all game data is local so the player can finish and view results normally.
-      if (!gs) {
-        _showConnError('Disconnected from host.');
-      }
+      // Show "host disconnected" overlay — whether in lobby, game, or results
+      _showHostDisconnect();
     });
 
     hostConn.on('error', () => {
-      if (!gs) {
-        _showConnError('Connection to host lost.');
-      }
+      _showHostDisconnect();
     });
   });
 
@@ -254,6 +248,25 @@ function _guestReceive(msg) {
   }
 }
 
+function _showHostDisconnect() {
+  stopSound();
+  clearInterval(timerInt); clearInterval(totalInt); clearInterval(lobbyInterval);
+  if (peer && !peer.destroyed) { peer.destroy(); peer = null; }
+  hostConn = null; guestConns = {}; mpPlayers = {};
+  mpMode = null; mpRoomCode = null; mpPlayerName = null; mpSeed = null;
+  gs = null; prevStreak = 0; assigning = false;
+  document.getElementById('modal-name').style.display = 'none';
+  const ov = document.getElementById('host-disconnect-overlay');
+  if (ov) { ov.style.display = 'flex'; }
+}
+
+function dismissHostDisconnect() {
+  const ov = document.getElementById('host-disconnect-overlay');
+  if (ov) { ov.style.display = 'none'; }
+  history.pushState({}, '', '/box-box-bingo/');
+  showScreen('screen-home');
+}
+
 function _showConnError(msg) {
   stopSound();
   clearInterval(timerInt); clearInterval(totalInt); clearInterval(lobbyInterval);
@@ -278,7 +291,7 @@ function showLobby() {
   history.pushState({}, '', '/box-box-bingo/room');
   showScreen('screen-lobby');
   document.getElementById('lobby-room-code').textContent = mpRoomCode;
-  const link = window.location.href.split('?')[0] + '?room=' + mpRoomCode;
+  const link = window.location.origin + '/box-box-bingo/?room=' + mpRoomCode;
   document.getElementById('lobby-share-link').value = link;
   drawQR(mpRoomCode, link);
   updateLobbyUI();
@@ -443,7 +456,7 @@ function _sendMyResult() {
 function showMpResults() {
   _sendMyResult();
 
-  const link = window.location.href.split('?')[0] + '?room=' + mpRoomCode;
+  const link = window.location.origin + '/box-box-bingo/?room=' + mpRoomCode;
   document.getElementById('mp-res-room-code').textContent = mpRoomCode;
   document.getElementById('mp-res-share-link').value      = link;
 
