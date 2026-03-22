@@ -110,18 +110,18 @@ function catIcon(text) {
 // == TEAM & TEAMMATE LOOKUP DATA ==
 // Driver IDs per constructor (only the named popular teams)
 const TEAM_DRIVERS = {
-  'Ferrari':                  ['alain-prost','alberto-ascari','carlos-reutemann','carlos-sainz-jr','charles-leclerc','felipe-massa','fernando-alonso','giancarlo-fisichella','gilles-villeneuve','jacky-ickx','jody-scheckter','john-surtees','juan-manuel-fangio','kimi-raikkonen','mario-andretti','michael-schumacher','nigel-mansell','niki-lauda','nino-farina','oliver-bearman','rene-arnoux','rubens-barrichello','sebastian-vettel'],
+  'Ferrari':                  ['alberto-ascari','alain-prost','carlos-reutemann','carlos-sainz-jr','charles-leclerc','felipe-massa','fernando-alonso','giancarlo-fisichella','gilles-villeneuve','jacky-ickx','jody-scheckter','john-surtees','juan-manuel-fangio','kimi-raikkonen','mario-andretti','michael-schumacher','nigel-mansell','niki-lauda','nino-farina','oliver-bearman','rene-arnoux','rubens-barrichello','sebastian-vettel'],
   'Mercedes':                 ['george-russell','juan-manuel-fangio','kimi-antonelli','lewis-hamilton','michael-schumacher','nico-rosberg','valtteri-bottas'],
-  'Red Bull':                 ['alexander-albon','daniel-ricciardo','daniil-kvyat','david-coulthard','mark-webber','max-verstappen','pierre-gasly','sebastian-vettel','sergio-perez'],
+  'Red Bull':                 ['alexander-albon','daniil-kvyat','daniel-ricciardo','david-coulthard','mark-webber','max-verstappen','pierre-gasly','sebastian-vettel','sergio-perez'],
   'McLaren':                  ['alain-prost','ayrton-senna','bruce-mclaren','carlos-sainz-jr','daniel-ricciardo','david-coulthard','denny-hulme','emerson-fittipaldi','fernando-alonso','gilles-villeneuve','heikki-kovalainen','james-hunt','jenson-button','jody-scheckter','juan-pablo-montoya','keke-rosberg','kevin-magnussen','kimi-raikkonen','lando-norris','lewis-hamilton','mika-hakkinen','nigel-mansell','niki-lauda','oscar-piastri','sergio-perez'],
-  'Williams':                 ['alain-prost','alexander-albon','ayrton-senna','carlos-reutemann','damon-hill','david-coulthard','felipe-massa','franco-colapinto','george-russell','heinz-harald-frentzen','jacques-villeneuve','jenson-button','juan-pablo-montoya','keke-rosberg','lance-stroll','logan-sargeant','mark-webber','nelson-piquet','nicholas-latifi','nico-hulkenberg','nico-rosberg','nigel-mansell','pastor-maldonado','ralf-schumacher','rubens-barrichello','valtteri-bottas'],
+  'Williams':                 ['ayrton-senna','alain-prost','alexander-albon','carlos-reutemann','damon-hill','david-coulthard','felipe-massa','franco-colapinto','george-russell','heinz-harald-frentzen','jacky-ickx','jacques-villeneuve','jenson-button','juan-pablo-montoya','keke-rosberg','lance-stroll','logan-sargeant','mark-webber','nelson-piquet','nicholas-latifi','nico-hulkenberg','nico-rosberg','nigel-mansell','nyck-de-vries','pastor-maldonado','ralf-schumacher','rubens-barrichello','valtteri-bottas'],
   'Renault':                  ['alain-prost','carlos-sainz-jr','daniel-ricciardo','esteban-ocon','fernando-alonso','giancarlo-fisichella','heikki-kovalainen','jacques-villeneuve','jarno-trulli','jenson-button','kevin-magnussen','nico-hulkenberg','rene-arnoux','romain-grosjean'],
   'Alpine':                   ['esteban-ocon','fernando-alonso','jack-doohan','pierre-gasly'],
-  'AlphaTauri/RB':            ['alexander-albon','carlos-sainz-jr','daniel-ricciardo','daniil-kvyat','isack-hadjar','liam-lawson','max-verstappen','nyck-de-vries','pierre-gasly','sebastian-vettel','yuki-tsunoda'],
-  'Sauber':                   ['antonio-giovinazzi','charles-leclerc','felipe-massa','gabriel-bortoleto','heinz-harald-frentzen','jacques-villeneuve','kimi-raikkonen','nico-hulkenberg','sebastian-vettel','sergio-perez'],
+  'AlphaTauri/RB':            ['alexander-albon','carlos-sainz-jr','daniil-kvyat','daniel-ricciardo','liam-lawson','max-verstappen','nyck-de-vries','pierre-gasly','sebastian-vettel','yuki-tsunoda'],
+  'Sauber':                   ['antonio-giovinazzi','charles-leclerc','felipe-massa','gabriel-bortoleto','guanyu-zhou','heinz-harald-frentzen','jacques-villeneuve','kimi-raikkonen','nico-hulkenberg','sebastian-vettel','sergio-perez','valtteri-bottas'],
   'Alfa Romeo':               ['antonio-giovinazzi','guanyu-zhou','juan-manuel-fangio','kimi-raikkonen','mario-andretti','nino-farina','valtteri-bottas'],
-  'Haas':                     ['kevin-magnussen','mick-schumacher','nico-hulkenberg','nikita-mazepin','oliver-bearman','romain-grosjean'],
-  'Lotus':                    ['ayrton-senna','carlos-reutemann','emerson-fittipaldi','graham-hill','jacky-ickx','jim-clark','jochen-rindt','kimi-raikkonen','mario-andretti','mika-hakkinen','nelson-piquet','nigel-mansell','pastor-maldonado','romain-grosjean','ronnie-peterson'],
+  'Haas':                     ['kevin-magnussen','mick-schumacher','nikita-mazepin','nico-hulkenberg','oliver-bearman','romain-grosjean'],
+  'Lotus':                    ['ayrton-senna','carlos-reutemann','emerson-fittipaldi','graham-hill','heikki-kovalainen','jacky-ickx','jim-clark','jochen-rindt','kimi-raikkonen','mario-andretti','mika-hakkinen','nelson-piquet','nigel-mansell','pastor-maldonado','romain-grosjean','ronnie-peterson'],
   'Jordan':                   ['damon-hill','giancarlo-fisichella','heinz-harald-frentzen','jarno-trulli','michael-schumacher','ralf-schumacher','rubens-barrichello'],
   'Benetton':                 ['giancarlo-fisichella','jos-verstappen','michael-schumacher','nelson-piquet'],
   'Brabham':                  ['carlos-reutemann','damon-hill','denny-hulme','graham-hill','jack-brabham','jacky-ickx','jochen-rindt','nelson-piquet','niki-lauda'],
@@ -282,19 +282,24 @@ function generateCategories() {
     if (cat) { usedIds.add(cat.id); result.push(cat); }
   }
 
-  // Fill any remaining slots with safe nationality categories
+  // Fill any remaining slots with safe nationality/birth-country categories
   let fillIdx = 0;
   const usedNats = new Set(
     result.filter(c => c.id.startsWith('nat-')).map(c => c.text.replace('Driver From ', '').toLowerCase().replace(/ /g, '-'))
   );
-  while (result.length < 15) {
-    const nat = commonNats[fillIdx % commonNats.length]; fillIdx++;
-    if (usedNats.has(nat)) continue;                        // skip already-used nationality
-    const id  = `nat-fill-${fillIdx}`;
+  // Extinde pool-ul cu commonBirth pentru a evita infinite loop dacă commonNats e epuizat
+  const fillPool = [...commonNats, ...commonBirth.filter(c => !commonNats.includes(c))];
+  let fillSafety = 0;
+  while (result.length < 15 && fillSafety < 500) {
+    fillSafety++;
+    if (fillIdx >= fillPool.length) break;
+    const nat = fillPool[fillIdx]; fillIdx++;
+    if (usedNats.has(nat)) continue;
+    const id = `nat-fill-${fillIdx}`;
     if (!usedIds.has(id)) {
       usedIds.add(id);
       usedNats.add(nat);
-      result.push({ id, text: `Driver From ${capFirst(nat)}`, matches: d => d.nationalityCountryId === nat });
+      result.push({ id, text: `Driver From ${capFirst(nat)}`, matches: d => d.nationalityCountryId === nat || d.countryOfBirthCountryId === nat });
     }
   }
   return _fyShuffle(result);
