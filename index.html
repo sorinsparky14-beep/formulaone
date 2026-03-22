@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>F1 Games</title>
+  <title>Fiapedia - Racing Fans Knowledge Hub</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Teko:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -429,6 +429,21 @@
     .contact-card .label { font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: var(--goldMid); margin-bottom: 4px; }
     .contact-card .value { font-size: 20px; color: var(--white); }
 
+    /* More games */
+    .more-games {
+      font-size: clamp(42px, 8vw, 96px);
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      text-align: center;
+      color: var(--red);
+      text-shadow: 0 0 40px rgba(232,0,45,.5), 0 0 80px rgba(232,0,45,.25);
+      margin-top: 40px;
+      margin-bottom: 40px;
+      opacity: 0;
+      animation: fadeUp .7s .8s ease forwards;
+    }
+
     /* Season note */
     .season-note {
       font-size: 13px;
@@ -449,9 +464,182 @@
       to   { opacity: 1; transform: translateY(0);    }
     }
 
+    /* ============================================================
+       RESPONSIVE — TABLET (max 900px)
+    ============================================================ */
+    @media (max-width: 900px) {
+      /* Home */
+      #home {
+        padding: 48px 20px 64px;
+      }
+
+      /* Hero */
+      .hero-title {
+        font-size: clamp(56px, 12vw, 120px);
+      }
+
+      /* Cards */
+      .cards {
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 4px;
+        max-width: 100%;
+      }
+
+      /* More games */
+      .more-games {
+        font-size: clamp(36px, 7vw, 72px);
+        margin-top: 32px;
+        margin-bottom: 32px;
+      }
+
+      /* Footer */
+      .site-footer {
+        max-width: 100%;
+        margin-top: 36px;
+      }
+
+      /* Subpages */
+      .subpage {
+        padding: 48px 20px 64px;
+        max-width: 100%;
+      }
+
+      .subpage h1 { font-size: 42px; }
+      .subpage h2 { font-size: 20px; }
+    }
+
+    /* ============================================================
+       RESPONSIVE — MOBILE (max 600px)
+    ============================================================ */
     @media (max-width: 600px) {
-      .cards { grid-template-columns: 1fr; }
-      .card  { padding: 28px 24px 36px;   }
+      /* Home */
+      #home {
+        padding: 40px 16px 56px;
+      }
+
+      /* Season badge */
+      .season-badge {
+        font-size: 11px;
+        letter-spacing: .2em;
+        padding: 5px 14px;
+        margin-bottom: 20px;
+      }
+
+      /* Hero */
+      .hero-title {
+        font-size: clamp(48px, 15vw, 80px);
+        letter-spacing: .02em;
+      }
+
+      /* Disclaimer */
+      .disclaimer {
+        font-size: 14px;
+        margin-top: 12px;
+        margin-bottom: 8px;
+      }
+
+      /* Eyebrow */
+      .eyebrow {
+        font-size: 11px;
+        letter-spacing: .3em;
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+
+      /* Cards */
+      .cards {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+
+      .card {
+        padding: 24px 18px 32px;
+      }
+
+      /* More games */
+      .more-games {
+        font-size: clamp(28px, 10vw, 52px);
+        letter-spacing: .08em;
+        margin-top: 28px;
+        margin-bottom: 28px;
+      }
+
+      /* Footer */
+      .site-footer {
+        margin-top: 28px;
+        padding-top: 20px;
+        gap: 12px;
+      }
+
+      .footer-links {
+        gap: 2px;
+      }
+
+      .footer-link {
+        font-size: 11px;
+        letter-spacing: .12em;
+        padding: 4px 8px;
+      }
+
+      .footer-copy {
+        font-size: 10px;
+      }
+
+      /* Subpages */
+      .subpage {
+        padding: 36px 16px 48px;
+      }
+
+      .subpage h1 {
+        font-size: 34px;
+        margin-bottom: 20px;
+      }
+
+      .subpage h2 {
+        font-size: 18px;
+        margin: 24px 0 8px;
+      }
+
+      .subpage p,
+      .subpage li {
+        font-size: 15px;
+        line-height: 1.6;
+      }
+
+      .back-btn {
+        font-size: 11px;
+        letter-spacing: .15em;
+        padding: 5px 12px;
+        margin-bottom: 24px;
+      }
+
+      .contact-card {
+        padding: 20px;
+      }
+
+      .contact-card .value {
+        font-size: 17px;
+      }
+    }
+
+    /* ============================================================
+       RESPONSIVE — SMALL MOBILE (max 380px)
+    ============================================================ */
+    @media (max-width: 380px) {
+      .hero-title {
+        font-size: clamp(38px, 14vw, 56px);
+      }
+
+      .more-games {
+        font-size: clamp(24px, 11vw, 40px);
+      }
+
+      .footer-link {
+        font-size: 10px;
+        padding: 3px 6px;
+      }
+
+      .subpage h1 { font-size: 28px; }
     }
   </style>
 </head>
@@ -482,6 +670,8 @@
       </a>
     </div>
     <p class="season-note">Both games are updated to the 2025 season.</p>
+
+    <p class="more-games">More Games To Come</p>
 
     <footer class="site-footer">
       <div class="footer-links">
