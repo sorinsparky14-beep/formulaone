@@ -592,13 +592,13 @@ const SCREEN_TITLES = {
 
 // Map screen IDs to clean URL paths
 function screenPath(id, resolvedId){
-  if(id==="howto")                                  return "/how-to-play";
-  if(id==="matchmaking")                            return "/play-online";
+  if(id==="howto")                                  return "/lights-out-and-toe-away/how-to-play";
+  if(id==="matchmaking")                            return "/lights-out-and-toe-away/play-online";
   if(id==="roomlobby" || id==="roomcreated")        return "/lights-out-and-toe-away/play-with-a-friend";
-  if(id==="game" || resolvedId==="game-same")       return "/same-screen";
-  if(resolvedId==="game-bot")                       return "/play-online";
+  if(id==="game" || resolvedId==="game-same")       return "/lights-out-and-toe-away/same-screen";
+  if(resolvedId==="game-bot")                       return "/lights-out-and-toe-away/play-online";
   if(resolvedId==="game-room")                      return "/lights-out-and-toe-away/play-with-a-friend";
-  return "/";
+  return "/lights-out-and-toe-away/";
 }
 
 function showS(id, pushHistory=true){
@@ -1080,6 +1080,17 @@ function openGameTab(mode){
   else if(mode==="room")  { showS("roomlobby"); }
 }
 
+function handleLogoClick(){
+  const path = window.location.pathname;
+  // Pe pagina home a jocului → du-te la hub
+  if(path === "/lights-out-and-toe-away/" || path === "/lights-out-and-toe-away"){
+    window.location.href = "/";
+  } else {
+    // Pe orice alta pagina (same-screen, play-with-a-friend, play-online) → pagina principala a jocului
+    goHome();
+  }
+}
+
 function goHome(){
   stopTimer();
   clearTimeout(resCountdownTimer); resCountdownTimer=null;
@@ -1120,17 +1131,17 @@ window.addEventListener("load",function(){
     history.replaceState({screen:"roomlobby"}, "", path);
     document.title = "Play with a Friend — Lights Out & Toe Away";
     showS("roomlobby", false);
-  } else if(path==="/same-screen"){
+  } else if(path==="/lights-out-and-toe-away/same-screen"){
     document.body.classList.add("show-bg");
     history.replaceState({screen:"game-same"}, "", path);
     document.title = "Same Screen — Lights Out & Toe Away";
     startSameScreen();
-  } else if(path==="/play-online"){
+  } else if(path==="/lights-out-and-toe-away/play-online"){
     document.body.classList.add("show-bg");
     history.replaceState({screen:"matchmaking"}, "", path);
     document.title = "Play Online — Lights Out & Toe Away";
     startVsBot();
-  } else if(path==="/how-to-play"){
+  } else if(path==="/lights-out-and-toe-away/how-to-play"){
     document.body.classList.add("show-bg");
     history.replaceState({screen:"howto"}, "", path);
     document.title = "How to Play — Lights Out & Toe Away";
