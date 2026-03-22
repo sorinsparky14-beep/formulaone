@@ -122,6 +122,11 @@ function _connectToRoom(code, isHost) {
 function _handleServerMessage(msg) {
   switch (msg.type) {
 
+    case 'your-id':
+      // Serverul ne trimite ID-ul real asignat conexiunii WebSocket
+      PLAYER_ID = msg.payload.id;
+      break;
+
     case 'room-state':
       // Starea curentă la conectare (ex. reconectare)
       mpPlayers = msg.payload.players;
@@ -136,8 +141,6 @@ function _handleServerMessage(msg) {
     case 'lobby-update':
       mpPlayers = msg.payload.players;
       mpSeed    = msg.payload.seed;
-      // Setează propriul PLAYER_ID bazat pe ce știe serverul
-      _syncMyId();
       updateLobbyUI();
       break;
 
@@ -157,14 +160,6 @@ function _handleServerMessage(msg) {
       _showHostDisconnect();
       break;
   }
-}
-
-// Sincronizează PLAYER_ID cu cel asignat de server (WebSocket connection ID)
-function _syncMyId() {
-  // Serverul ne cunoaște după connection ID — căutăm playerul cu numele nostru
-  // care a intrat cel mai recent și nu are deja un alt match
-  const mine = Object.values(mpPlayers).find(p => p.name === mpPlayerName);
-  if (mine) PLAYER_ID = mine.id;
 }
 
 function _wsSend(msg) {
@@ -585,6 +580,9 @@ window.addEventListener('popstate', () => {
     // Back from room or play-solo → go home
     goHome();
   } else {
+    goHome();
+  }
+});
     goHome();
   }
 });
