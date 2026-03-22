@@ -431,5 +431,13 @@
 <script src="js/categories.js"></script>
 <script src="js/game.js"></script>
 
+
+<!-- Host disconnected overlay -->
+<div id="host-disconnect-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;flex-direction:column;gap:24px;">
+  <div style="font-size:3rem;">🔌</div>
+  <p style="font-size:clamp(20px,4vw,32px);font-weight:700;letter-spacing:.05em;color:var(--red);text-align:center;padding:0 20px;">The host has disconnected.</p>
+  <button onclick="dismissHostDisconnect()" style="padding:12px 32px;font-family:'Teko',sans-serif;font-size:1rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--ivory);background:var(--iron);border:1px solid var(--bolt);cursor:pointer;">← BACK TO HOME</button>
+</div>
+
 </body>
 </html>
