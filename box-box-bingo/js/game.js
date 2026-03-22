@@ -197,10 +197,10 @@ function _sendResult(result) {
 function _showHostDisconnect() {
   stopSound();
   clearInterval(timerInt); clearInterval(totalInt); clearInterval(lobbyInterval);
-  if (_ws) { _ws.close(); _ws = null; }
-  mpPlayers = {};
   mpMode = null; mpRoomCode = null; mpPlayerName = null; mpSeed = null;
   gs = null; prevStreak = 0; assigning = false;
+  if (_ws) { _ws.close(); _ws = null; }
+  mpPlayers = {};
   document.getElementById('modal-name').style.display = 'none';
   const ov = document.getElementById('host-disconnect-overlay');
   if (ov) { ov.style.display = 'flex'; }
@@ -216,10 +216,10 @@ function dismissHostDisconnect() {
 function _showConnError(msg) {
   stopSound();
   clearInterval(timerInt); clearInterval(totalInt); clearInterval(lobbyInterval);
-  if (_ws) { _ws.close(); _ws = null; }
-  mpPlayers = {};
   mpMode = null; mpRoomCode = null; mpPlayerName = null; mpSeed = null;
   gs = null; prevStreak = 0; assigning = false;
+  if (_ws) { _ws.close(); _ws = null; }
+  mpPlayers = {};
   document.getElementById('modal-name').style.display = 'none';
   history.pushState({}, '', '/box-box-bingo/');
   showScreen('screen-home');
@@ -361,7 +361,8 @@ function hostStartRace() {
 
 // == MP GAME START ============================================================
 function startMpGame() {
-  const rng = seededRandom(mpSeed);
+  // Guard against seed=0 which causes seededRandom to produce all-zero output
+  const rng = seededRandom(mpSeed || 1);
   gs = buildGameSeeded(rng);
   prevStreak = 0; assigning = false;
   showScreen('screen-game');
@@ -620,6 +621,129 @@ function _showSoloResults() {
   });
 }
 
+// == MP RESULTS ===============================================================
+
+function _sendMyResult() {
+  if (!gs) return;
+  _sendResult({
+    correct: gs.correct.size,
+    total:   gs.categories.length,
+    time:    gs.totalTime,
+    streak:  gs.best,
+  });
+}
+
+function showMpResults() {
+  _sendMyResult();
+
+  document.getElementById('mp-my-correct').textContent = gs.correct.size;
+  document.getElementById('mp-my-time').textContent    = fmt(gs.totalTime);
+  document.getElementById('mp-my-streak').textContent  = gs.best + '×';
+
+  document.getElementById('mp-res-room-code').textContent = mpRoomCode || '——';
+  const link = window.location.origin + '/box-box-bingo/?room=' + (mpRoomCode || '');
+  document.getElementById('mp-res-share-link').value = link;
+
+  showScreen('screen-mp-results');
+  playSoundDelayed(gs.correct.size === gs.categories.length ? 'bingo-confirmed' : 'fail-radio', 150);
+
+  renderMpLeaderboard({ players: mpPlayers });
+}
+
+function renderMpLeaderboard({ players }) {
+  const tbody = document.getElementById('mp-leaderboard');
+  if (!tbody) return;
+
+  const list = Object.values(players)
+    .filter(p => p.result)
+    .sort((a, b) => {
+      if (b.result.correct !== a.result.correct) return b.result.correct - a.result.correct;
+      return a.result.time - b.result.time;
+    });
+
+  const winner = list[0];
+  document.getElementById('mp-winner-name').textContent = winner ? winner.name : '—';
+
+  tbody.innerHTML = '';
+  list.forEach((p, i) => {
+    const isMe = p.id === PLAYER_ID;
+    const safeName = p.name.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const pct  = Math.round((p.result.correct / p.result.total) * 100);
+    const tr   = document.createElement('tr');
+    tr.style.cssText = 'border-bottom:1px solid var(--bolt)' + (isMe ? ';background:rgba(201,168,76,.07)' : '');
+    tr.innerHTML = `
+      <td style="padding:10px 16px;font-family:'Teko',sans-serif;font-size:1.3rem;color:${i===0?'var(--goldLight)':'var(--dim)'}">${i + 1}</td>
+      <td style="padding:10px 10px">
+        <span style="font-weight:800;letter-spacing:.05em;color:${isMe?'var(--ivory)':'var(--silver)'}">
+          ${safeName}${isMe ? ' <span style="color:var(--goldMid);font-size:.7em">(You)</span>' : ''}
+        </span>
+      </td>
+      <td style="padding:10px 14px;text-align:right;font-family:'Teko',sans-serif;font-size:1.15rem;color:var(--ivory)">${p.result.correct}/${p.result.total} <span style="font-size:.8rem;color:var(--dim)">(${pct}%)</span></td>
+      <td style="padding:10px 14px;text-align:right;font-family:'Teko',sans-serif;font-size:1.15rem;color:var(--chrome)">${fmt(p.result.time)}</td>
+      <td style="padding:10px 16px;text-align:right;font-family:'Teko',sans-serif;font-size:1.15rem;color:var(--amber)">${p.result.streak}×</td>`;
+    tbody.appendChild(tr);
+  });
+
+  const pending = Object.values(players).filter(p => !p.result);
+  if (pending.length > 0) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="5" style="padding:10px 16px;text-align:center;font-size:.72rem;letter-spacing:.18em;color:var(--dim)">⏳ ${pending.length} driver${pending.length>1?'s':''} still racing…</td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+function showMyBoard() {
+  if (!gs) return;
+  const modal = document.getElementById('modal-my-board');
+  if (!modal) return;
+
+  const statsEl = document.getElementById('my-board-stats');
+  if (statsEl) {
+    const pct = Math.round((gs.correct.size / gs.categories.length) * 100);
+    statsEl.innerHTML = `
+      <div style="text-align:center"><div style="font-family:'Teko',sans-serif;font-size:1.8rem;color:var(--ivory)">${gs.correct.size}/${gs.categories.length}</div><div style="font-size:.6rem;letter-spacing:.2em;color:var(--chrome)">CORRECT</div></div>
+      <div style="text-align:center"><div style="font-family:'Teko',sans-serif;font-size:1.8rem;color:var(--ivory)">${pct}%</div><div style="font-size:.6rem;letter-spacing:.2em;color:var(--chrome)">SCORE</div></div>
+      <div style="text-align:center"><div style="font-family:'Teko',sans-serif;font-size:1.8rem;color:var(--ivory)">${fmt(gs.totalTime)}</div><div style="font-size:.6rem;letter-spacing:.2em;color:var(--chrome)">TIME</div></div>
+      <div style="text-align:center"><div style="font-family:'Teko',sans-serif;font-size:1.8rem;color:var(--amber)">${gs.best}×</div><div style="font-size:.6rem;letter-spacing:.2em;color:var(--chrome)">STREAK</div></div>`;
+  }
+
+  const list = document.getElementById('my-board-list');
+  if (list) {
+    list.innerHTML = '';
+    gs.categories.forEach(cat => {
+      const c   = gs.correct.has(cat.id), w = gs.wrong.has(cat.id);
+      const drv = gs.assigned.get(cat.id);
+      const badgeLabel = c ? '✓ Correct' : w ? '✗ Wrong' : '— Skipped';
+      const badgeStyle = c
+        ? 'background:rgba(0,214,143,.25);color:#00ffb0;border:1px solid rgba(0,214,143,.5)'
+        : w
+        ? 'background:rgba(232,0,45,.12);color:var(--red);border:1px solid rgba(232,0,45,.25)'
+        : 'background:rgba(90,90,122,.15);color:var(--dim);border:1px solid rgba(90,90,122,.25)';
+      const tr = document.createElement('tr');
+      tr.style.borderBottom = '1px solid var(--bolt)';
+      tr.innerHTML = `
+        <td style="padding:8px 10px"><span style="padding:3px 8px;font-size:.65rem;letter-spacing:.14em;font-weight:700;${badgeStyle}">${badgeLabel}</span></td>
+        <td style="padding:8px 10px;color:var(--silver);font-size:.82rem">${cat.text}</td>
+        <td style="padding:8px 10px;text-align:right;color:var(--chrome);font-size:.82rem">${drv ? drv.name : '—'}</td>`;
+      list.appendChild(tr);
+    });
+  }
+
+  modal.style.display = 'flex';
+}
+
+function closeMyBoard() {
+  const modal = document.getElementById('modal-my-board');
+  if (modal) modal.style.display = 'none';
+}
+
+function mpPlayAgain() {
+  stopSound();
+  clearInterval(timerInt); clearInterval(totalInt);
+  gs = null; prevStreak = 0; assigning = false;
+  showLobby();
+}
+
 // == LIFECYCLE ================================================================
 function showHowToPlay() {
   history.pushState({}, '', '/box-box-bingo/how-to-play');
@@ -629,19 +753,19 @@ function showHowToPlay() {
 function goHome() {
   stopSound();
   clearInterval(timerInt); clearInterval(totalInt); clearInterval(lobbyInterval);
-  if (_ws) { _ws.close(); _ws = null; }
-  mpPlayers = {};
   mpMode = null; mpRoomCode = null; mpPlayerName = null; mpSeed = null;
   gs = null; prevStreak = 0; assigning = false;
+  if (_ws) { _ws.close(); _ws = null; }
+  mpPlayers = {};
   history.pushState({}, '', '/box-box-bingo/');
   showScreen('screen-home');
 }
 
 function startGame() {
   stopSound();
+  mpMode = 'solo'; mpRoomCode = null; mpPlayerName = null;
   if (_ws) { _ws.close(); _ws = null; }
   mpPlayers = {};
-  mpMode = 'solo'; mpRoomCode = null; mpPlayerName = null;
   gs = buildGame(); prevStreak = 0; assigning = false;
   history.pushState({}, '', '/box-box-bingo/play-solo');
   showScreen('screen-game');
