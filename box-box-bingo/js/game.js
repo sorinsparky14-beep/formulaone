@@ -715,14 +715,14 @@ function showMyBoard() {
       const drv = gs.assigned.get(cat.id);
       const badgeLabel = c ? '✓ Correct' : w ? '✗ Wrong' : '— Skipped';
       const badgeStyle = c
-        ? 'background:#00d68f;color:#000;border:1px solid #00d68f'
+        ? 'background:rgba(0,214,143,.25);color:#00ffb0;border:1px solid rgba(0,214,143,.5)'
         : w
-        ? 'background:#e8002d;color:#fff;border:1px solid #e8002d'
-        : 'background:rgba(90,90,122,.3);color:#aaa;border:1px solid rgba(90,90,122,.4)';
+        ? 'background:rgba(232,0,45,.12);color:var(--red);border:1px solid rgba(232,0,45,.25)'
+        : 'background:rgba(90,90,122,.15);color:var(--dim);border:1px solid rgba(90,90,122,.25)';
       const tr = document.createElement('tr');
       tr.style.borderBottom = '1px solid var(--bolt)';
       tr.innerHTML = `
-        <td style="padding:8px 10px"><span style="padding:3px 8px;font-size:.65rem;letter-spacing:.14em;font-weight:800;${badgeStyle}">${badgeLabel}</span></td>
+        <td style="padding:8px 10px"><span style="padding:3px 8px;font-size:.65rem;letter-spacing:.14em;font-weight:700;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;${badgeStyle}">${badgeLabel}</span></td>
         <td style="padding:8px 10px;color:var(--silver);font-size:.82rem">${cat.text}</td>
         <td style="padding:8px 10px;text-align:right;color:var(--chrome);font-size:.82rem">${drv ? drv.name : '—'}</td>`;
       list.appendChild(tr);
