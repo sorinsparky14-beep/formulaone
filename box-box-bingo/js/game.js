@@ -1,4 +1,4 @@
-/// =============================================================================
+// =============================================================================
 // BOX BOX BINGO — game.js
 // Multiplayer: PartyKit WebSocket Server (suportă 1000+ jucători simultan)
 //
@@ -728,8 +728,8 @@ function showMyBoard() {
       tr.style.borderBottom = '1px solid var(--bolt)';
       tr.innerHTML = `
         <td style="padding:8px 10px"><span class="results-cat-badge ${state}" style="${badgeStyle}">${badgeLabel}</span></td>
-        <td style="padding:8px 10px;color:var(--silver);font-size:.82rem">${cat.text}</td>
-        <td style="padding:8px 10px;text-align:right;color:var(--chrome);font-size:.82rem">${drv ? drv.name : '—'}</td>`;
+        <td style="padding:8px 10px;font-size:.82rem;color:${c ? '#00ffb0' : w ? 'var(--red)' : 'var(--dim)'}">${cat.text}</td>
+        <td style="padding:8px 10px;text-align:right;font-size:.82rem;color:${c ? '#00ffb0' : w ? 'var(--red)' : 'var(--dim)'}">${drv ? drv.name : '—'}</td>`;
       list.appendChild(tr);
     });
   }
