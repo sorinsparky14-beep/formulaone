@@ -246,6 +246,46 @@ function showLobby() {
   }
 }
 
+// == COPY WITH FEEDBACK =======================================================
+function showCopiedToast(btn) {
+  const orig      = btn.innerHTML;
+  const origColor = btn.style.color;
+  const origBorder = btn.style.borderColor;
+  btn.innerHTML   = 'COPIED!';
+  btn.style.color = '#00d68f';
+  btn.style.borderColor = '#00d68f';
+  setTimeout(() => {
+    btn.innerHTML = orig;
+    btn.style.color = origColor;
+    btn.style.borderColor = origBorder;
+  }, 1800);
+}
+
+function copyRoomLink(btn) {
+  const val = document.getElementById('lobby-share-link').value;
+  navigator.clipboard.writeText(val)
+    .then(() => { if (btn) showCopiedToast(btn); })
+    .catch(() => {
+      // Fallback pentru browsere fara clipboard API
+      const inp = document.getElementById('lobby-share-link');
+      inp.select();
+      document.execCommand('copy');
+      if (btn) showCopiedToast(btn);
+    });
+}
+
+function copyMpLink(btn) {
+  const val = document.getElementById('mp-res-share-link').value;
+  navigator.clipboard.writeText(val)
+    .then(() => { if (btn) showCopiedToast(btn); })
+    .catch(() => {
+      const inp = document.getElementById('mp-res-share-link');
+      inp.select();
+      document.execCommand('copy');
+      if (btn) showCopiedToast(btn);
+    });
+}
+
 // == QR CODE ==================================================================
 function drawQR(code, url) {
   const canvas = document.getElementById('qr-canvas');
