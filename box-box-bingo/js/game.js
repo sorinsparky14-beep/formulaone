@@ -1,16 +1,18 @@
 // =============================================================================
 // BOX BOX BINGO — game.js
-// Multiplayer: WebRTC via PeerJS (true P2P, no database)
+// Multiplayer: PartyKit WebSocket Server (suportă 1000+ jucători simultan)
 //
 // Architecture:
-//   HOST  → opens Peer with ID "f1bingo-<CODE>"
-//           receives 'join' messages, broadcasts lobby/start/results-update
-//   GUEST → opens Peer with random ID
-//           connects to host peer, sends 'join' / 'result'
-//           receives 'lobby-update' / 'start' / 'results-update'
+//   HOST  → conectat la PartyKit server, trimite "start"
+//   GUEST → conectat la același server, primește "lobby-update"/"start"/"results-update"
+//   SERVER → partykit-server.ts gestionează starea camerei
 // =============================================================================
 
-// == P2P STATE ================================================================
+// ── PartyKit config ───────────────────────────────────────────────────────────
+// Înlocuiește cu URL-ul tău după deploy: npx partykit deploy partykit-server.ts --name box-box-bingo
+const PARTYKIT_HOST = 'box-box-bingo.<USER>.partykit.dev';
+
+// == MP STATE =================================================================
 let mpMode        = null;   // 'solo' | 'host' | 'join'
 let mpRoomCode    = null;
 let mpPlayerName  = null;
@@ -18,19 +20,13 @@ let mpPendingAction = null;
 let mpSeed        = null;
 let mpPlayers     = {};     // { [id]: { name, id, isHost, joinedAt, result } }
 
-let peer          = null;   // own PeerJS Peer
-let hostConn      = null;   // guest's connection TO the host
-let guestConns    = {};     // host's connections TO each guest { peerId: conn }
-
+let _ws           = null;   // WebSocket conexiune la PartyKit
 let PLAYER_ID = 'p' + Math.random().toString(36).replace(/[^a-z0-9]/g, '').slice(0, 9);
 
 // == ROOM CODE: 6 chars =======================================================
 function genRoomCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   return Array.from({length: 6}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-}
-function peerIdFromCode(code) {
-  return 'f1bingo-' + code.toLowerCase();
 }
 
 // == SEEDED RNG (all players get identical categories) ========================
@@ -89,91 +85,100 @@ function flashEl(id) {
   setTimeout(() => { el.style.borderColor = ''; }, 1500);
 }
 
-// == HOST: CREATE ROOM ========================================================
-function createRoom() {
-  mpMode      = 'host';
-  mpRoomCode  = genRoomCode();
-  mpSeed      = mpRoomCode.split('').reduce((a, c) => Math.imul(a, 31) + c.charCodeAt(0), 7) >>> 0;
-  mpPlayers   = {};
-  mpPlayers[PLAYER_ID] = {
-    name: mpPlayerName, id: PLAYER_ID,
-    isHost: true, joinedAt: Date.now(), result: null
+// == PARTYKIT CONNECTION ======================================================
+function _connectToRoom(code, isHost) {
+  if (_ws) { _ws.close(); _ws = null; }
+
+  const url = `wss://${PARTYKIT_HOST}/party/${code.toLowerCase()}`;
+  _ws = new WebSocket(url);
+
+  _ws.onopen = () => {
+    // Trimite join cu nume și rol
+    _ws.send(JSON.stringify({
+      type: 'join',
+      payload: { name: mpPlayerName, isHost }
+    }));
+    showLobby();
   };
 
-  _openHostPeer(peerIdFromCode(mpRoomCode));
-}
+  _ws.onmessage = (event) => {
+    let msg;
+    try { msg = JSON.parse(event.data); } catch { return; }
+    _handleServerMessage(msg);
+  };
 
-function _openHostPeer(peerId) {
-  if (peer && !peer.destroyed) peer.destroy();
-  peer = new Peer(peerId);
-
-  peer.on('open', () => {
-    showLobby();
-  });
-
-  peer.on('connection', conn => {
-    conn.on('open', () => {
-      guestConns[conn.peer] = conn;
-      conn.on('data', msg => _hostReceive(conn, msg));
-      conn.on('close', () => {
-        delete guestConns[conn.peer];
-        delete mpPlayers[conn.peer];
-        _broadcastLobby();
-      });
-      conn.on('error', () => {
-        delete guestConns[conn.peer];
-      });
-    });
-  });
-
-  peer.on('error', err => {
-    if (err.type === 'unavailable-id') {
-      // Room code taken — try another
-      mpRoomCode = genRoomCode();
-      mpSeed = mpRoomCode.split('').reduce((a, c) => Math.imul(a, 31) + c.charCodeAt(0), 7) >>> 0;
-      peer.destroy();
-      _openHostPeer(peerIdFromCode(mpRoomCode));
-    } else {
-      _showConnError('Could not create room. Check your connection.');
+  _ws.onclose = () => {
+    if (mpMode !== null) {
+      // Dacă eram conectați și s-a închis neașteptat
+      _showConnError('Connection lost. Please try again.');
     }
-  });
+  };
+
+  _ws.onerror = () => {
+    _showConnError('Could not connect to room. Check the code.');
+  };
 }
 
-function _hostReceive(conn, msg) {
-  if (msg.type === 'join') {
-    mpPlayers[conn.peer] = {
-      name: msg.payload.name, id: conn.peer,
-      isHost: false, joinedAt: Date.now(), result: null
-    };
-    _broadcastLobby();
+function _handleServerMessage(msg) {
+  switch (msg.type) {
+
+    case 'room-state':
+      // Starea curentă la conectare (ex. reconectare)
+      mpPlayers = msg.payload.players;
+      mpSeed    = msg.payload.seed;
+      if (msg.payload.started && mpMode === 'join') {
+        startMpGame();
+      } else {
+        updateLobbyUI();
+      }
+      break;
+
+    case 'lobby-update':
+      mpPlayers = msg.payload.players;
+      mpSeed    = msg.payload.seed;
+      // Setează propriul PLAYER_ID bazat pe ce știe serverul
+      _syncMyId();
+      updateLobbyUI();
+      break;
+
+    case 'start':
+      mpPlayers = msg.payload.players;
+      mpSeed    = msg.payload.seed;
+      clearInterval(lobbyInterval);
+      startMpGame();
+      break;
+
+    case 'results-update':
+      mpPlayers = msg.payload.players;
+      renderMpLeaderboard({ players: mpPlayers });
+      break;
+
+    case 'host-disconnect':
+      _showHostDisconnect();
+      break;
   }
-  if (msg.type === 'result') {
-    if (mpPlayers[conn.peer]) mpPlayers[conn.peer].result = msg.payload;
-    _broadcastResultsUpdate();
-    renderMpLeaderboard({ players: mpPlayers });
+}
+
+// Sincronizează PLAYER_ID cu cel asignat de server (WebSocket connection ID)
+function _syncMyId() {
+  // Serverul ne cunoaște după connection ID — căutăm playerul cu numele nostru
+  // care a intrat cel mai recent și nu are deja un alt match
+  const mine = Object.values(mpPlayers).find(p => p.name === mpPlayerName);
+  if (mine) PLAYER_ID = mine.id;
+}
+
+function _wsSend(msg) {
+  if (_ws && _ws.readyState === WebSocket.OPEN) {
+    _ws.send(JSON.stringify(msg));
   }
 }
 
-function _broadcastLobby() {
-  const payload = { players: mpPlayers, seed: mpSeed };
-  Object.values(guestConns).forEach(c => {
-    if (c.open) c.send({ type: 'lobby-update', payload });
-  });
-  updateLobbyUI();
-}
-
-function _broadcastStart() {
-  const payload = { players: mpPlayers, seed: mpSeed };
-  Object.values(guestConns).forEach(c => {
-    if (c.open) c.send({ type: 'start', payload });
-  });
-}
-
-function _broadcastResultsUpdate() {
-  const payload = { players: mpPlayers };
-  Object.values(guestConns).forEach(c => {
-    if (c.open) c.send({ type: 'results-update', payload });
-  });
+// == HOST: CREATE ROOM ========================================================
+function createRoom() {
+  mpMode     = 'host';
+  mpRoomCode = genRoomCode();
+  mpPlayers  = {};
+  _connectToRoom(mpRoomCode, true);
 }
 
 // == GUEST: JOIN ROOM =========================================================
@@ -182,77 +187,23 @@ function joinRoom() {
   mpMode     = 'join';
   mpRoomCode = code;
   mpPlayers  = {};
-
-  if (peer && !peer.destroyed) peer.destroy();
-  // Guest peer uses own random PLAYER_ID
-  peer = new Peer(PLAYER_ID);
-
-  peer.on('open', () => {
-    hostConn = peer.connect(peerIdFromCode(code), { reliable: true });
-
-    hostConn.on('open', () => {
-      hostConn.send({ type: 'join', payload: { name: mpPlayerName, id: PLAYER_ID } });
-      // Add myself to local mpPlayers so lobby renders immediately
-      mpPlayers[PLAYER_ID] = {
-        name: mpPlayerName, id: PLAYER_ID,
-        isHost: false, joinedAt: Date.now(), result: null
-      };
-      showLobby();
-    });
-
-    hostConn.on('data', msg => _guestReceive(msg));
-
-    hostConn.on('close', () => {
-      // Show "host disconnected" overlay — whether in lobby, game, or results
-      _showHostDisconnect();
-    });
-
-    hostConn.on('error', () => {
-      _showHostDisconnect();
-    });
-  });
-
-  peer.on('error', err => {
-    if (err.type === 'peer-unavailable') {
-      _showConnError('Room not found — check the code.');
-      const inp = document.getElementById('join-code-input');
-      inp.value = '';
-      inp.placeholder = 'Room not found';
-      setTimeout(() => { inp.placeholder = 'Enter Code'; }, 3000);
-    } else if (err.type === 'unavailable-id') {
-      // Our random PLAYER_ID clashed — regenerate and retry
-      PLAYER_ID = 'p' + Math.random().toString(36).replace(/[^a-z0-9]/g, '').slice(0, 9);
-      peer.destroy();
-      joinRoom();
-    } else {
-      _showConnError('Connection error: ' + err.type);
-    }
-  });
+  _connectToRoom(mpRoomCode, false);
 }
 
-function _guestReceive(msg) {
-  if (msg.type === 'lobby-update') {
-    mpPlayers = msg.payload.players;
-    mpSeed    = msg.payload.seed;
-    updateLobbyUI();
-  }
-  if (msg.type === 'start') {
-    mpPlayers = msg.payload.players;
-    mpSeed    = msg.payload.seed;
-    clearInterval(lobbyInterval);
-    startMpGame();
-  }
-  if (msg.type === 'results-update') {
-    mpPlayers = msg.payload.players;
-    renderMpLeaderboard({ players: mpPlayers });
-  }
+// == BROADCAST HELPERS (acum trimit la server) =================================
+function _broadcastStart() {
+  _wsSend({ type: 'start' });
+}
+
+function _sendResult(result) {
+  _wsSend({ type: 'result', payload: result });
 }
 
 function _showHostDisconnect() {
   stopSound();
   clearInterval(timerInt); clearInterval(totalInt); clearInterval(lobbyInterval);
-  if (peer && !peer.destroyed) { peer.destroy(); peer = null; }
-  hostConn = null; guestConns = {}; mpPlayers = {};
+  if (_ws) { _ws.close(); _ws = null; }
+  mpPlayers = {};
   mpMode = null; mpRoomCode = null; mpPlayerName = null; mpSeed = null;
   gs = null; prevStreak = 0; assigning = false;
   document.getElementById('modal-name').style.display = 'none';
@@ -270,11 +221,10 @@ function dismissHostDisconnect() {
 function _showConnError(msg) {
   stopSound();
   clearInterval(timerInt); clearInterval(totalInt); clearInterval(lobbyInterval);
-  if (peer && !peer.destroyed) { peer.destroy(); peer = null; }
-  hostConn = null; guestConns = {}; mpPlayers = {};
+  if (_ws) { _ws.close(); _ws = null; }
+  mpPlayers = {};
   mpMode = null; mpRoomCode = null; mpPlayerName = null; mpSeed = null;
   gs = null; prevStreak = 0; assigning = false;
-  // Close any open modals before returning to home
   document.getElementById('modal-name').style.display = 'none';
   history.pushState({}, '', '/box-box-bingo/');
   showScreen('screen-home');
@@ -296,7 +246,6 @@ function showLobby() {
   drawQR(mpRoomCode, link);
   updateLobbyUI();
   if (lobbyInterval) clearInterval(lobbyInterval);
-  // Refresh UI periodically (host drives this via broadcast; this is just a safety net)
   if (mpMode === 'host') {
     lobbyInterval = setInterval(updateLobbyUI, 2000);
   }
@@ -338,8 +287,7 @@ function updateLobbyUI() {
 function hostStartRace() {
   if (mpMode !== 'host') return;
   clearInterval(lobbyInterval);
-  _broadcastStart();
-  startMpGame();
+  _broadcastStart();   // trimite la server, serverul trimite tuturor
 }
 
 // == MP GAME START ============================================================
@@ -354,8 +302,6 @@ function startMpGame() {
 }
 
 function buildGameSeeded(rng) {
-  // Drivers: seeded-same order for ALL players (shared room seed) → same 40-driver pool
-  // Categories: random per player — but pool is guaranteed to cover every category
   const categories  = generateCategories();
   const shuffledAll = seededShuffle(allDrivers, rng);
   const drivers     = buildDriverPool(shuffledAll, categories);
@@ -364,241 +310,6 @@ function buildGameSeeded(rng) {
     idx: 0, correct: new Set(), wrong: new Set(), assigned: new Map(),
     streak: 0, best: 0, time: 15, done: false, totalTime: 0
   };
-}
-
-
-// == COPY WITH FEEDBACK =======================================================
-function showCopiedToast(btn) {
-  const orig      = btn.innerHTML;
-  const origStyle = btn.getAttribute('style');
-  btn.innerHTML   = 'COPIED!';
-  btn.setAttribute('style', origStyle
-    .replace(/color:[^;]+/, 'color:#00d68f')
-    .replace(/border:[^;]+/, 'border:1px solid #00d68f'));
-  setTimeout(() => { btn.innerHTML = orig; btn.setAttribute('style', origStyle); }, 1800);
-}
-function copyRoomLink(btn) {
-  const val = document.getElementById('lobby-share-link').value;
-  navigator.clipboard.writeText(val).then(() => { if (btn) showCopiedToast(btn); }).catch(() => {});
-}
-function copyMpLink(btn) {
-  const val = document.getElementById('mp-res-share-link').value;
-  navigator.clipboard.writeText(val).then(() => { if (btn) showCopiedToast(btn); }).catch(() => {});
-}
-
-// == QR CODE (real, scannable) ================================================
-function drawQR(code, url) {
-  const canvas = document.getElementById('qr-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  if (typeof QRCode !== 'undefined') {
-    const tmp = document.createElement('div');
-    tmp.style.display = 'none';
-    document.body.appendChild(tmp);
-    new QRCode(tmp, {
-      text: url, width: 120, height: 120,
-      colorDark: '#080810', colorLight: '#c9a84c',
-      correctLevel: QRCode.CorrectLevel.M
-    });
-    setTimeout(() => {
-      const qrc = tmp.querySelector('canvas');
-      const img = tmp.querySelector('img');
-      if (qrc)      ctx.drawImage(qrc, 0, 0, 120, 120);
-      else if (img) { const i = new Image(); i.onload = () => ctx.drawImage(i, 0, 0, 120, 120); i.src = img.src; }
-      document.body.removeChild(tmp);
-    }, 100);
-  } else {
-    ctx.fillStyle = '#c9a84c';
-    ctx.fillRect(0, 0, 120, 120);
-    ctx.fillStyle = '#080810';
-    ctx.font = 'bold 16px monospace';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(code, 60, 60);
-  }
-}
-
-// == MP RESULTS ===============================================================
-function _sendMyResult() {
-  const result = {
-    correct: gs.correct.size,
-    total:   gs.categories.length,
-    time:    gs.totalTime,
-    streak:  gs.best
-  };
-  if (mpMode === 'host') {
-    mpPlayers[PLAYER_ID].result = result;
-    _broadcastResultsUpdate();
-    renderMpLeaderboard({ players: mpPlayers });
-  } else if (hostConn) {
-    // Optimistically update own entry for immediate rendering
-    if (mpPlayers[PLAYER_ID]) mpPlayers[PLAYER_ID].result = result;
-    if (hostConn.open) {
-      hostConn.send({ type: 'result', payload: result });
-    } else {
-      // Connection not yet open — retry up to 3s
-      let attempts = 0;
-      const retry = setInterval(() => {
-        attempts++;
-        if (hostConn && hostConn.open) {
-          hostConn.send({ type: 'result', payload: result });
-          clearInterval(retry);
-        } else if (attempts >= 6) {
-          clearInterval(retry);
-        }
-      }, 500);
-    }
-  }
-}
-
-function showMpResults() {
-  _sendMyResult();
-
-  const link = window.location.origin + '/box-box-bingo/?room=' + mpRoomCode;
-  document.getElementById('mp-res-room-code').textContent = mpRoomCode;
-  document.getElementById('mp-res-share-link').value      = link;
-
-  const myResult = mpPlayers[PLAYER_ID] && mpPlayers[PLAYER_ID].result
-    ? mpPlayers[PLAYER_ID].result
-    : { correct: gs.correct.size, total: gs.categories.length, time: gs.totalTime, streak: gs.best };
-
-  document.getElementById('mp-my-correct').textContent = myResult.correct;
-  document.getElementById('mp-my-time').textContent    = fmt(myResult.time);
-  document.getElementById('mp-my-streak').textContent  = myResult.streak + '×';
-
-  renderMpLeaderboard({ players: mpPlayers });
-  showScreen('screen-mp-results');
-  const pct = Math.round((gs.correct.size / gs.categories.length) * 100);
-  playSoundDelayed(pct === 100 ? 'bingo-confirmed' : 'fail-radio', 150);
-}
-
-function renderMpLeaderboard(room) {
-  const allP     = Object.values(room.players);
-  const finished = allP.filter(p => p.result).sort((a, b) => {
-    if (b.result.correct !== a.result.correct) return b.result.correct - a.result.correct;
-    return a.result.time - b.result.time;
-  });
-
-  if (finished.length > 0) {
-    const winner = finished[0];
-    document.getElementById('mp-winner-name').innerHTML =
-      winner.name + (winner.id === PLAYER_ID ? ' <span style="font-size:1.2rem;color:var(--chrome)">(You)</span>' : '');
-  }
-
-  const tbody  = document.getElementById('mp-leaderboard');
-  tbody.innerHTML = '';
-  const medals = ['🥇', '🥈', '🥉'];
-
-  finished.forEach((p, i) => {
-    const isMe = p.id === PLAYER_ID;
-    const tr   = document.createElement('tr');
-    tr.className = 'mp-lb-row' + (isMe ? ' me' : '');
-    tr.innerHTML = `
-      <td style="padding:11px 16px;text-align:left">${medals[i] || `<span style="color:var(--dim);font-size:.85rem">${i + 1}</span>`}</td>
-      <td style="padding:11px 10px">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="player-avatar" style="width:24px;height:24px;font-size:.8rem">${p.name[0].toUpperCase()}</div>
-          <span style="font-weight:800;color:${isMe ? 'var(--ivory)' : 'var(--silver)'}">${p.name}</span>
-          ${isMe ? '<span style="color:var(--goldMid);font-size:.68rem">(You)</span>' : ''}
-        </div>
-        ${isMe && p.result ? `<div style="margin-top:6px;padding:8px 12px;background:var(--abyss);border-left:2px solid var(--goldDim);font-family:'Teko',sans-serif;font-style:italic;font-size:.78rem;color:var(--chrome)">${getRadioQuip(p.result.correct, p.result.total)}</div>` : ''}
-      </td>
-      <td style="padding:11px 14px;text-align:right;font-family:'Teko',sans-serif;font-size:1.3rem;color:var(--ivory)">${p.result.correct}<span style="color:var(--dim);font-size:.8em">/${p.result.total}</span></td>
-      <td style="padding:11px 14px;text-align:right;color:var(--chrome);font-size:.88rem">⏱ ${fmt(p.result.time)}</td>
-      <td style="padding:11px 16px;text-align:right;color:var(--amber);font-size:.88rem">🔥 ${p.result.streak}×</td>`;
-    tbody.appendChild(tr);
-  });
-
-  allP.filter(p => !p.result).forEach(p => {
-    const tr = document.createElement('tr');
-    tr.className = 'mp-lb-row';
-    tr.innerHTML = `
-      <td style="padding:11px 16px;color:var(--dim)">—</td>
-      <td style="padding:11px 10px;display:flex;align-items:center;gap:8px">
-        <div class="player-avatar" style="width:24px;height:24px;font-size:.8rem;background:var(--bolt)">${p.name[0].toUpperCase()}</div>
-        <span style="color:var(--dim)">${p.name}</span>
-        <span style="color:var(--dim);font-size:.7rem;animation:pulseDot 1s infinite">Racing...</span>
-      </td>
-      <td colspan="3" style="padding:11px 16px;text-align:right;color:var(--dim);font-size:.8rem">In progress</td>`;
-    tbody.appendChild(tr);
-  });
-}
-
-function getRadioQuip(correct, total) {
-  const pct = correct / total;
-  if (pct === 1)  return '— Team Radio: "We had Bingo? We had Bingo!" <span style="color:var(--green)">Perfect run.</span>';
-  if (pct >= 0.7) return '— Team Radio: "We had Bingo?" <span style="color:var(--amber)">Strong drive. Keep pushing.</span>';
-  return '— Team Radio: "We had Bingo?" <span style="color:var(--red)">Negative. Box, we need to talk.</span>';
-}
-
-// == MY BOARD MODAL ===========================================================
-function showMyBoard() {
-  if (!gs) return;
-  const correct = gs.correct.size, total = gs.categories.length;
-  const pct     = Math.round((correct / total) * 100);
-  document.getElementById('my-board-stats').innerHTML = `
-    <div style="background:var(--abyss);border:1px solid var(--bolt);padding:10px 18px;text-align:center;flex:1">
-      <div style="font-family:'Teko',sans-serif;font-size:2rem;color:var(--green);line-height:1">${correct}</div>
-      <div style="font-size:.58rem;letter-spacing:.18em;color:var(--chrome);text-transform:uppercase;margin-top:2px">Correct</div>
-    </div>
-    <div style="background:var(--abyss);border:1px solid var(--bolt);padding:10px 18px;text-align:center;flex:1">
-      <div style="font-family:'Teko',sans-serif;font-size:2rem;color:var(--red);line-height:1">${gs.wrong.size}</div>
-      <div style="font-size:.58rem;letter-spacing:.18em;color:var(--chrome);text-transform:uppercase;margin-top:2px">Wrong</div>
-    </div>
-    <div style="background:var(--abyss);border:1px solid var(--bolt);padding:10px 18px;text-align:center;flex:1">
-      <div style="font-family:'Teko',sans-serif;font-size:2rem;color:var(--ivory);line-height:1">${pct}%</div>
-      <div style="font-size:.58rem;letter-spacing:.18em;color:var(--chrome);text-transform:uppercase;margin-top:2px">Accuracy</div>
-    </div>`;
-  const list = document.getElementById('my-board-list');
-  list.innerHTML = '';
-  gs.categories.forEach(cat => {
-    const c = gs.correct.has(cat.id), w = gs.wrong.has(cat.id);
-    const drv = gs.assigned.get(cat.id);
-    const rowBg      = c ? 'rgba(0,214,143,.07)' : w ? 'rgba(232,0,45,.07)' : 'transparent';
-    const borderC    = c ? 'rgba(0,214,143,.25)' : w ? 'rgba(232,0,45,.2)'  : 'rgba(58,58,82,.25)';
-    const catColor   = c ? 'rgba(0,214,143,.9)'  : w ? 'rgba(232,80,80,.85)' : 'var(--dim)';
-    const drvColor   = c ? 'rgba(0,214,143,.7)'  : w ? 'rgba(232,80,80,.6)'  : 'var(--dim)';
-    const badge = c
-      ? `<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 9px;font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;line-height:1.2;background:rgba(0,214,143,.25);color:#00ffb0;border:1px solid rgba(0,214,143,.5);clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%);text-shadow:0 0 8px rgba(0,214,143,.6)"><span style="text-transform:none">✓</span> Correct</span>`
-      : w
-      ? `<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 9px;font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;line-height:1.2;background:rgba(232,0,45,.1);color:var(--red);border:1px solid rgba(232,0,45,.25);clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%)"><span style="text-transform:none">✗</span> Wrong</span>`
-      : `<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 9px;font-size:.66rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;line-height:1.2;background:rgba(90,90,122,.12);color:var(--dim);border:1px solid rgba(90,90,122,.25);clip-path:polygon(5px 0%,100% 0%,calc(100% - 5px) 100%,0% 100%)"><span style="text-transform:none">—</span> Skipped</span>`;
-    const tr = document.createElement('tr');
-    tr.style.cssText = `background:${rowBg};border-bottom:1px solid ${borderC}`;
-    tr.innerHTML = `
-      <td style="padding:9px 10px">${badge}</td>
-      <td style="padding:9px 10px;font-size:.84rem;font-weight:600;letter-spacing:.02em;color:${catColor}">${cat.text}</td>
-      <td style="padding:9px 10px;text-align:right;font-size:.8rem;letter-spacing:.04em;color:${drvColor}">${drv ? drv.name : '—'}</td>`;
-    list.appendChild(tr);
-  });
-  document.getElementById('modal-my-board').style.display = 'flex';
-}
-
-function closeMyBoard() {
-  document.getElementById('modal-my-board').style.display = 'none';
-}
-
-function mpPlayAgain() {
-  stopSound();
-  clearInterval(timerInt); clearInterval(totalInt); clearInterval(lobbyInterval);
-  if (peer && !peer.destroyed) { peer.destroy(); peer = null; }
-  hostConn = null; guestConns = {}; mpPlayers = {};
-  mpMode = null; mpRoomCode = null; mpPlayerName = null; mpSeed = null;
-  gs = null; prevStreak = 0; assigning = false;
-  history.pushState({}, '', '/box-box-bingo/');
-  showScreen('screen-home');
-}
-
-// == URL ROOM PARAM ===========================================================
-function checkUrlRoom() {
-  const room = new URLSearchParams(window.location.search).get('room');
-  if (room) {
-    document.getElementById('join-code-input').value = room.toUpperCase();
-    // Auto-open name modal so the player goes straight to entering their name
-    showNameModal('join');
-  }
 }
 
 // == GAME STATE ===============================================================
@@ -829,9 +540,9 @@ function showHowToPlay() {
 
 function goHome() {
   stopSound();
-  clearInterval(timerInt); clearInterval(totalInt);
-  if (peer && !peer.destroyed) { peer.destroy(); peer = null; }
-  hostConn = null; guestConns = {}; mpPlayers = {};
+  clearInterval(timerInt); clearInterval(totalInt); clearInterval(lobbyInterval);
+  if (_ws) { _ws.close(); _ws = null; }
+  mpPlayers = {};
   mpMode = null; mpRoomCode = null; mpPlayerName = null; mpSeed = null;
   gs = null; prevStreak = 0; assigning = false;
   history.pushState({}, '', '/box-box-bingo/');
@@ -840,8 +551,8 @@ function goHome() {
 
 function startGame() {
   stopSound();
-  if (peer && !peer.destroyed) { peer.destroy(); peer = null; }
-  hostConn = null; guestConns = {}; mpPlayers = {};
+  if (_ws) { _ws.close(); _ws = null; }
+  mpPlayers = {};
   mpMode = 'solo'; mpRoomCode = null; mpPlayerName = null;
   gs = buildGame(); prevStreak = 0; assigning = false;
   history.pushState({}, '', '/box-box-bingo/play-solo');
