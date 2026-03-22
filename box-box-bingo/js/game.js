@@ -604,6 +604,15 @@ window.addEventListener('load', () => {
   }
 });
 
+// == URL ROOM PARAM ===========================================================
+function checkUrlRoom() {
+  const room = new URLSearchParams(window.location.search).get('room');
+  if (room) {
+    document.getElementById('join-code-input').value = room.toUpperCase();
+    showNameModal('join');
+  }
+}
+
 window.addEventListener('popstate', () => {
   const path = window.location.pathname;
   if (path === '/box-box-bingo/how-to-play') {
