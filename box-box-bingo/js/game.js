@@ -246,6 +246,38 @@ function showLobby() {
   }
 }
 
+// == QR CODE ==================================================================
+function drawQR(code, url) {
+  const canvas = document.getElementById('qr-canvas');
+  if (!canvas) return;
+
+  // Daca libraria nu e inca incarcata, incearca din nou dupa 300ms
+  if (typeof QRCode === 'undefined') {
+    setTimeout(() => drawQR(code, url), 300);
+    return;
+  }
+
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const tmp = document.createElement('div');
+  tmp.style.display = 'none';
+  document.body.appendChild(tmp);
+  new QRCode(tmp, {
+    text: url, width: 120, height: 120,
+    colorDark: '#080810', colorLight: '#c9a84c',
+    correctLevel: QRCode.CorrectLevel.M
+  });
+  setTimeout(() => {
+    const qrc = tmp.querySelector('canvas');
+    const img = tmp.querySelector('img');
+    if (qrc)      ctx.drawImage(qrc, 0, 0, 120, 120);
+    else if (img) { const i = new Image(); i.onload = () => ctx.drawImage(i, 0, 0, 120, 120); i.src = img.src; }
+    document.body.removeChild(tmp);
+  }, 150);
+}
+
+
 function updateLobbyUI() {
   const players = Object.values(mpPlayers);
   document.getElementById('lobby-player-count').textContent = players.length;
@@ -580,9 +612,6 @@ window.addEventListener('popstate', () => {
     // Back from room or play-solo → go home
     goHome();
   } else {
-    goHome();
-  }
-});
     goHome();
   }
 });
