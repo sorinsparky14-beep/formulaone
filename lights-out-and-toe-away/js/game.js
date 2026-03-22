@@ -17,7 +17,7 @@ let P2_LABEL = "Player 2";
 let ROOM_CODE = "";
 let roomBC = null;
 let roomRole = "";
-let ROOM_POLL = null;;
+let ROOM_POLL = null;
 let selIdx=null;
 let timerInterval=null;
 let timerLeft=TURN_TIME;
@@ -367,7 +367,7 @@ function startVsBot(){
     ? 10 + Math.floor(Math.random() * 21)   // 10–30s
     : 30 + Math.floor(Math.random() * 91);  // 30–120s
   let elapsed = 0;
-  const CIRC = 2 * Math.PI * 46; // r=46 → circumference ≈ 289.03
+  const MM_CIRC = 2 * Math.PI * 46; // r=46 → circumference ≈ 289.03 (matchmaking ring)
 
   const ring = document.getElementById("mm-ring");
   const timerEl = document.getElementById("mm-timer");
@@ -378,7 +378,7 @@ function startVsBot(){
   statusEl.style.display = "";
   foundEl.style.display = "none";
   ring.style.stroke = "var(--green)";
-  ring.style.strokeDashoffset = String(CIRC); // fully empty
+  ring.style.strokeDashoffset = String(MM_CIRC); // fully empty
   timerEl.style.color = "var(--t1)";
   timerEl.textContent = "0:00";
 
@@ -393,7 +393,7 @@ function startVsBot(){
 
     // Ring fills as time increases
     const pct = elapsed / totalSecs;
-    ring.style.strokeDashoffset = String(CIRC * (1 - pct));
+    ring.style.strokeDashoffset = String(MM_CIRC * (1 - pct));
 
     if(elapsed >= foundAt || elapsed >= totalSecs){
       clearInterval(mmInterval); mmInterval = null;
