@@ -12,6 +12,8 @@
   </style>
 </head>
 <body>
+<!-- Fixed background layer - works on iOS/Android unlike CSS fixed backgrounds -->
+<div id="bg-layer" aria-hidden="true"></div>
 <div id="app">
 <header>
   <div class="logo" id="site-logo" onclick="handleLogoClick()"><span>LIGHTS OUT</span><span style="color:var(--t1)"> &amp; TOE AWAY</span></div>
@@ -320,7 +322,11 @@
 
 
 <section id="info-footer" style="display:none;
-  background:linear-gradient(135deg,#0a0a0f 0%,#12121a 100%);
+  background:
+    radial-gradient(ellipse at 50% 100%, rgba(100,0,0,0.22) 0%, transparent 60%),
+    radial-gradient(ellipse at 0% 100%, rgba(80,0,0,0.15) 0%, transparent 45%),
+    radial-gradient(ellipse at 100% 100%, rgba(80,0,0,0.15) 0%, transparent 45%),
+    linear-gradient(135deg,#0a0a0f 0%,#12121a 100%);
   border-top:1px solid rgba(255,255,255,0.06);
   padding:clamp(20px,4vw,48px) clamp(12px,4vw,24px) clamp(24px,4vw,56px);
   font-family:"Teko",sans-serif;
