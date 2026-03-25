@@ -90,9 +90,9 @@ header{display:flex;align-items:center;justify-content:center;padding:12px 20px;
 .cell.wo{background:rgba(0,191,255,.13);border-color:var(--blue);}
 @keyframes pop{0%{transform:scale(0) rotate(-15deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
 
-/* USED BAR */
-.ub{max-width:780px;margin:9px auto 0;font-size:25px;color:var(--t2);text-align:center;line-height:1.9;}
-.ut{display:inline-block;background:var(--s1);border:1px solid var(--bd);padding:1px 6px;margin:2px;font-weight:600;text-transform:uppercase;}
+/* USED BAR - hidden, kept for JS compatibility */
+.ub{display:none !important;}
+.ut{display:none !important;}
 
 /* MODAL */
 .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.86);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
@@ -440,4 +440,39 @@ body {
 header, #app > .scr, #app > * {
   position: relative;
   z-index: 1;
+}
+
+/* ── GAME SCREEN CENTERING ──────────────────────────────────────────── */
+#game-same, #game-bot, #game-room {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 12px 16px 40px;
+  box-sizing: border-box;
+}
+/* Action bar centrat si vizibil */
+.action-bar {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+  padding: 0 8px;
+}
+/* .ub removed - no used bar */
+
+@media (max-width: 768px) {
+  #game-same, #game-bot, #game-room {
+    padding: 6px 8px 24px;
+  }
+  .action-bar {
+    margin-top: 8px;
+    gap: 6px;
+  }
+  .action-bar .btn-sm {
+    font-size: 13px;
+    padding: 7px 10px;
+    flex: 1;
+    min-width: 80px;
+    text-align: center;
+  }
 }
