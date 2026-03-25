@@ -25,24 +25,10 @@ body::after{
 body.show-bg::after{
   opacity:1;
 }
-/* Footer gets its own red gradient since fixed::after doesn't cover scrolled content */
-#info-footer::before {
-  content:'';
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  background:
-    radial-gradient(ellipse at 50% 100%, rgba(120,0,0,0.35) 0%, rgba(60,0,0,0.15) 40%, transparent 70%),
-    radial-gradient(ellipse at 0% 100%, rgba(100,0,0,0.25) 0%, transparent 50%),
-    radial-gradient(ellipse at 100% 100%, rgba(100,0,0,0.25) 0%, transparent 50%);
-  z-index:0;
-}
+/* Footer background - dark only, red tint comes from body::after (fixed) on scroll */
 #info-footer {
   position: relative;
-}
-#info-footer > * {
-  position: relative;
-  z-index: 1;
+  background: linear-gradient(135deg,#0a0a0f 0%,#12121a 100%) !important;
 }
 /* Home page specific gradient - red from sides/bottom corners, dark center */
 #home::before{
