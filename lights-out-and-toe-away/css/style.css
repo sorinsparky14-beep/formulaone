@@ -25,6 +25,25 @@ body::after{
 body.show-bg::after{
   opacity:1;
 }
+/* Footer gets its own red gradient since fixed::after doesn't cover scrolled content */
+#info-footer::before {
+  content:'';
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(ellipse at 50% 100%, rgba(120,0,0,0.35) 0%, rgba(60,0,0,0.15) 40%, transparent 70%),
+    radial-gradient(ellipse at 0% 100%, rgba(100,0,0,0.25) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 100%, rgba(100,0,0,0.25) 0%, transparent 50%);
+  z-index:0;
+}
+#info-footer {
+  position: relative;
+}
+#info-footer > * {
+  position: relative;
+  z-index: 1;
+}
 /* Home page specific gradient - red from sides/bottom corners, dark center */
 #home::before{
   content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
@@ -412,5 +431,32 @@ body {
     max-width: 100% !important;
     padding-left: 12px !important;
     padding-right: 12px !important;
+  }
+}
+
+/* ── INFO FOOTER MOBILE FIX ────────────────────────────────────────── */
+#info-footer {
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+#info-footer > div {
+  width: 100%;
+  box-sizing: border-box;
+}
+@media (max-width: 600px) {
+  #footer-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  #info-footer {
+    padding: 24px 14px 32px !important;
+  }
+  #info-footer h2 {
+    margin-bottom: 20px !important;
+  }
+  #info-footer > div {
+    max-width: 100% !important;
+    padding: 0 !important;
   }
 }
