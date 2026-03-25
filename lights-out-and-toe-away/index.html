@@ -322,9 +322,12 @@
 <section id="info-footer" style="display:none;
   background:linear-gradient(135deg,#0a0a0f 0%,#12121a 100%);
   border-top:1px solid rgba(255,255,255,0.06);
-  padding:48px 24px 56px;
+  padding:clamp(20px,4vw,48px) clamp(12px,4vw,24px) clamp(24px,4vw,56px);
   font-family:"Teko",sans-serif;
   color:#c0c0d0;
+  width:100%;
+  box-sizing:border-box;
+  overflow-x:hidden;
 ">
   <div style="max-width:880px;margin:0 auto;overflow-x:hidden;width:100%;box-sizing:border-box;">
 
@@ -339,14 +342,14 @@
       font-weight:700;
     ">GRIDLOCK REFERENCE GUIDE</h2>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;" id="footer-grid">
 
       <!-- TOP 5 CIRCUITS -->
       <div style="
         background:rgba(255,255,255,0.03);
         border:1px solid rgba(255,255,255,0.07);
         border-radius:12px;
-        padding:28px 28px 24px;
+        padding:clamp(12px,3vw,28px);
       ">
         <p style="
           font-family:"Teko",sans-serif;
@@ -408,7 +411,7 @@
         background:rgba(255,255,255,0.03);
         border:1px solid rgba(255,255,255,0.07);
         border-radius:12px;
-        padding:28px 28px 24px;
+        padding:clamp(12px,3vw,28px);
       ">
         <p style="
           font-family:"Teko",sans-serif;
