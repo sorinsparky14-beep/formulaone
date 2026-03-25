@@ -4,13 +4,7 @@
 :root{--red:#E10600;--rg:rgba(225,6,0,.4);--gold:#FFD700;--blue:#00BFFF;--bg:rgba(0,191,255,.4);--green:#00e676;--purple:#b388ff;--orange:#ff9100;--dark:#0a0a0f;--s1:#16161f;--s2:#1e1e2a;--bd:#2a2a3a;--t1:#f0f0f8;--t2:#888899;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{
-  background-color: #0a0a0f;
-  background-image:
-    radial-gradient(ellipse at 50% 100%, rgba(140,0,0,0.5) 0%, rgba(80,0,0,0.28) 30%, transparent 60%),
-    radial-gradient(ellipse at 0% 80%, rgba(120,0,0,0.32) 0%, transparent 45%),
-    radial-gradient(ellipse at 100% 80%, rgba(120,0,0,0.32) 0%, transparent 45%),
-    repeating-linear-gradient(-45deg,transparent,transparent 60px,rgba(225,6,0,.015) 60px,rgba(225,6,0,.015) 62px);
-  background-attachment: fixed;
+  background:#0a0a0f;
   color:var(--t1);font-family:"Teko",sans-serif;font-weight:500;min-height:100vh;
   overflow-x:hidden;
 }
@@ -427,4 +421,23 @@ html {
 body {
   background: transparent;
   min-height: 100%;
+}
+
+/* ── STATIC BACKGROUND LAYER (works on all mobile browsers) ─────────── */
+/* A real fixed div in DOM - more reliable than ::after on iOS/Android   */
+#bg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 100%, rgba(140,0,0,0.50) 0%, rgba(80,0,0,0.28) 30%, transparent 60%),
+    radial-gradient(ellipse at 0% 85%, rgba(120,0,0,0.32) 0%, transparent 45%),
+    radial-gradient(ellipse at 100% 85%, rgba(120,0,0,0.32) 0%, transparent 45%),
+    repeating-linear-gradient(-45deg,transparent,transparent 60px,rgba(225,6,0,.015) 60px,rgba(225,6,0,.015) 62px);
+}
+/* Everything above the bg-layer */
+header, #app > .scr, #app > * {
+  position: relative;
+  z-index: 1;
 }
