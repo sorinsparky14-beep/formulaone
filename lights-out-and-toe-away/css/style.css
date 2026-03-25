@@ -10,27 +10,37 @@ body{
 }
 body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(-45deg,transparent,transparent 60px,rgba(225,6,0,.015) 60px,rgba(225,6,0,.015) 62px);pointer-events:none;z-index:0;}
 /* Red gradient shown on all pages EXCEPT home */
-body.show-bg::after{
+body::after{
   content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background:
     radial-gradient(ellipse at 50% 110%, rgba(140,0,0,0.45) 0%, rgba(80,0,0,0.25) 35%, transparent 60%),
     radial-gradient(ellipse at 0% 100%, rgba(120,0,0,0.3) 0%, transparent 45%),
     radial-gradient(ellipse at 100% 100%, rgba(120,0,0,0.3) 0%, transparent 45%);
-  will-change:transform;
+  will-change:opacity;
   backface-visibility:hidden;
   -webkit-backface-visibility:hidden;
+  opacity:0;
+  transition:opacity 0.3s ease;
+}
+body.show-bg::after{
+  opacity:1;
 }
 /* Home page specific gradient - red from sides/bottom corners, dark center */
-#home.on::before{
+#home::before{
   content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
   background:
     radial-gradient(ellipse at 0% 100%, rgba(130,0,0,0.6) 0%, rgba(90,0,0,0.25) 30%, transparent 55%),
     radial-gradient(ellipse at 100% 100%, rgba(130,0,0,0.6) 0%, rgba(90,0,0,0.25) 30%, transparent 55%),
     radial-gradient(ellipse at 0% 50%, rgba(80,0,0,0.2) 0%, transparent 40%),
     radial-gradient(ellipse at 100% 50%, rgba(80,0,0,0.2) 0%, transparent 40%);
-  will-change:transform;
+  will-change:opacity;
   backface-visibility:hidden;
   -webkit-backface-visibility:hidden;
+  opacity:0;
+  transition:opacity 0.3s ease;
+}
+#home.on::before{
+  opacity:1;
 }
 body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(-45deg,transparent,transparent 60px,rgba(225,6,0,.015) 60px,rgba(225,6,0,.015) 62px);pointer-events:none;}
 #app{position:relative;background:transparent;overflow-x:hidden;}
@@ -356,3 +366,51 @@ header{display:flex;align-items:center;justify-content:center;padding:12px 20px;
 }
 
 .res-countdown{font-family:"Teko",sans-serif;font-size:25px;letter-spacing:2px;color:var(--t2);margin-top:8px;text-align:center;}
+
+/* ── OVERFLOW-X FIX — prevent horizontal scroll on all devices ─────── */
+html {
+  overflow-x: hidden;
+}
+body {
+  overflow-x: hidden;
+  width: 100%;
+}
+#app, #app > * {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+#info-footer, #info-footer > * {
+  overflow-x: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+/* Ensure grid never overflows on small screens */
+@media (max-width: 600px) {
+  .gw {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  .gw > * {
+    min-width: 0;
+    overflow: hidden;
+  }
+  .gh, .score-table {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  .action-bar {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  .ub {
+    max-width: 100%;
+    word-break: break-word;
+    overflow-x: hidden;
+  }
+  #info-footer > div {
+    max-width: 100% !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+}
