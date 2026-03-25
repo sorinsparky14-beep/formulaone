@@ -4,51 +4,21 @@
 :root{--red:#E10600;--rg:rgba(225,6,0,.4);--gold:#FFD700;--blue:#00BFFF;--bg:rgba(0,191,255,.4);--green:#00e676;--purple:#b388ff;--orange:#ff9100;--dark:#0a0a0f;--s1:#16161f;--s2:#1e1e2a;--bd:#2a2a3a;--t1:#f0f0f8;--t2:#888899;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{
-  background:#0a0a0f;
+  background-color: #0a0a0f;
+  background-image:
+    radial-gradient(ellipse at 50% 100%, rgba(140,0,0,0.5) 0%, rgba(80,0,0,0.28) 30%, transparent 60%),
+    radial-gradient(ellipse at 0% 80%, rgba(120,0,0,0.32) 0%, transparent 45%),
+    radial-gradient(ellipse at 100% 80%, rgba(120,0,0,0.32) 0%, transparent 45%),
+    repeating-linear-gradient(-45deg,transparent,transparent 60px,rgba(225,6,0,.015) 60px,rgba(225,6,0,.015) 62px);
+  background-attachment: fixed;
   color:var(--t1);font-family:"Teko",sans-serif;font-weight:500;min-height:100vh;
   overflow-x:hidden;
 }
-body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(-45deg,transparent,transparent 60px,rgba(225,6,0,.015) 60px,rgba(225,6,0,.015) 62px);pointer-events:none;z-index:0;}
-/* Red gradient shown on all pages EXCEPT home */
-body::after{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:
-    radial-gradient(ellipse at 50% 110%, rgba(140,0,0,0.45) 0%, rgba(80,0,0,0.25) 35%, transparent 60%),
-    radial-gradient(ellipse at 0% 100%, rgba(120,0,0,0.3) 0%, transparent 45%),
-    radial-gradient(ellipse at 100% 100%, rgba(120,0,0,0.3) 0%, transparent 45%);
-  will-change:opacity;
-  backface-visibility:hidden;
-  -webkit-backface-visibility:hidden;
-  opacity:0;
-  transition:opacity 0.3s ease;
+#app{
+  position:relative;
+  overflow-x:hidden;
+  background:transparent;
 }
-body.show-bg::after{
-  opacity:1;
-}
-/* Footer background - dark only, red tint comes from body::after (fixed) on scroll */
-#info-footer {
-  position: relative;
-  background: linear-gradient(135deg,#0a0a0f 0%,#12121a 100%) !important;
-}
-/* Home page specific gradient - red from sides/bottom corners, dark center */
-#home::before{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:
-    radial-gradient(ellipse at 0% 100%, rgba(130,0,0,0.6) 0%, rgba(90,0,0,0.25) 30%, transparent 55%),
-    radial-gradient(ellipse at 100% 100%, rgba(130,0,0,0.6) 0%, rgba(90,0,0,0.25) 30%, transparent 55%),
-    radial-gradient(ellipse at 0% 50%, rgba(80,0,0,0.2) 0%, transparent 40%),
-    radial-gradient(ellipse at 100% 50%, rgba(80,0,0,0.2) 0%, transparent 40%);
-  will-change:opacity;
-  backface-visibility:hidden;
-  -webkit-backface-visibility:hidden;
-  opacity:0;
-  transition:opacity 0.3s ease;
-}
-#home.on::before{
-  opacity:1;
-}
-body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(-45deg,transparent,transparent 60px,rgba(225,6,0,.015) 60px,rgba(225,6,0,.015) 62px);pointer-events:none;}
-#app{position:relative;background:transparent;overflow-x:hidden;}
 header{display:flex;align-items:center;justify-content:center;padding:12px 20px;border-bottom:1px solid var(--bd);background:linear-gradient(180deg,rgba(225,6,0,.07) 0,transparent);gap:12px;}
 .logo{font-family:Orbitron,"Teko",monospace;font-size:clamp(24px,5vw,34px);font-weight:900;letter-spacing:2px;text-align:center;}
 .logo span:first-child{color:var(--red);text-shadow:0 0 20px var(--rg);}
@@ -421,11 +391,7 @@ body {
 }
 
 /* ── INFO FOOTER MOBILE FIX ────────────────────────────────────────── */
-#info-footer {
-  width: 100%;
-  box-sizing: border-box;
-  overflow-x: hidden;
-}
+#info-footer { background: transparent !important; position: relative; }
 #info-footer > div {
   width: 100%;
   box-sizing: border-box;
@@ -445,4 +411,20 @@ body {
     max-width: 100% !important;
     padding: 0 !important;
   }
+}
+
+/* ── BACKGROUND: static dark + red corners, fixed so it covers everything ── */
+/* Un singur layer fix pe html - nu pe body - ca să acopere și footer la scroll */
+html {
+  min-height: 100%;
+  background:
+    radial-gradient(ellipse at 0% 100%, rgba(130,0,0,0.55) 0%, rgba(80,0,0,0.2) 35%, transparent 60%),
+    radial-gradient(ellipse at 100% 100%, rgba(130,0,0,0.55) 0%, rgba(80,0,0,0.2) 35%, transparent 60%),
+    radial-gradient(ellipse at 50% 100%, rgba(90,0,0,0.28) 0%, transparent 55%),
+    #0a0a0f;
+  background-attachment: fixed;
+}
+body {
+  background: transparent;
+  min-height: 100%;
 }
